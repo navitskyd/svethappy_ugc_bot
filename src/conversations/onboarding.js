@@ -3,7 +3,7 @@ import {FieldValue} from "firebase-admin/firestore";
 import {db} from "../firestore.js";
 import {EMAIL_RE, formatUserSummary} from "../helpers.js";
 
-const {LANDING_PAGE} = process.env;
+const {LANDING_PAGE, PRIVACY_POLICY_URL = ""} = process.env;
 
 export async function onboarding(conversation, ctx) {
     // Step 1 – consent
@@ -34,7 +34,13 @@ export async function onboarding(conversation, ctx) {
     // Step 2 – email (loop until confirmed)
     let email = null;
     while (!email) {
-        await ctx.reply("📧 Пожалуйста, введите ваш <b>email</b>:", {parse_mode: "HTML"});
+        const privacyLine = PRIVACY_POLICY_URL
+            ? `\n\n📄 <a href="${PRIVACY_POLICY_URL}">Политика конфиденциальности</a>`
+            : "";
+        await ctx.reply(
+            `📧 Пожалуйста, введите ваш <b>email</b>:${privacyLine}`,
+            {parse_mode: "HTML", link_preview_options: {is_disabled: true}}
+        );
 
         let candidate = null;
         while (!candidate) {
