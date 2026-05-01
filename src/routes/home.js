@@ -4,6 +4,8 @@ const {
     YOUTUBE_VIDEO_ID = "",
     UGC_CLUB_URL = "#",
     PRIVATE_COMMUNITY_URL = "#",
+    PRIVACY_POLICY_URL = "#",
+    OFFER_URL = "#",
 } = process.env;
 
 const router = Router();
@@ -78,6 +80,24 @@ router.get("/", (_req, res) => {
       border: 2px solid rgba(255,255,255,0.4);
     }
     .btn-secondary:hover { border-color: #fff; }
+    footer {
+      margin-top: 48px;
+      padding: 20px 16px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #718096;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      width: 100%;
+      max-width: 760px;
+    }
+    footer a {
+      color: #a0aec0;
+      text-decoration: none;
+      margin: 0 10px;
+      transition: color 0.15s;
+    }
+    footer a:hover { color: #fff; }
+    footer .separator { margin: 0 4px; opacity: 0.4; }
   </style>
 </head>
 <body>
@@ -96,6 +116,12 @@ router.get("/", (_req, res) => {
     <a class="btn btn-primary" id="btn-ugc" href="${UGC_CLUB_URL}">🎬 Вступить в UGC Клуб</a>
     <a class="btn btn-secondary" href="${PRIVATE_COMMUNITY_URL}">🔒 Войти в закрытое сообщество</a>
   </div>
+
+  <footer>
+    <a href="${PRIVACY_POLICY_URL}" target="_blank" rel="noopener noreferrer">Политика конфиденциальности / Privacy Policy</a>
+    <span class="separator">|</span>
+    <a href="${OFFER_URL}" target="_blank" rel="noopener noreferrer">Публичная оферта / Terms and Conditions</a>
+  </footer>
 
   <script>
     const params = new URLSearchParams(window.location.search);
