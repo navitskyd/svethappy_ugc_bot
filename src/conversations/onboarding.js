@@ -16,7 +16,7 @@ export async function onboarding(conversation, ctx) {
     // Step 1 – single greeting + consent + email prompt
     await ctx.reply(
         `👋 Привет!\n\n` +
-        `Чтобы получить доступ к <b>SvetHappy UGC</b>, мне понадобится ваш email.\n\n` +
+        `Чтобы получить доступ к <b>бесплатному уроку по UGC</b>, мне понадобится ваш email.\n\n` +
         `Вводя свои данные, вы даёте согласие на обработку данных вашего профиля Telegram и email в соответствии с ${policyLink} и принимаете условия ${offerLink}.\n\n` +
         `🔒 Ваши данные в безопасности и обрабатываются согласно стандартам GDPR.\n\n` +
         `Пожалуйста, введите ваш email ниже:`,
