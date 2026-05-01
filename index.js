@@ -126,7 +126,9 @@ async function onboarding(conversation, ctx) {
 
     if (existingData.email && existingData.email !== email) {
         const prev = Array.isArray(existingData.backupEmails) ? existingData.backupEmails : [];
-        const backupEmails = [...new Set([...prev, existingData.email])].slice(-5);
+        const backupEmails = [...new Set([...prev, existingData.email])]
+            .filter(e => e !== email)
+            .slice(-5);
         baseData.backupEmails = backupEmails;
     }
 
