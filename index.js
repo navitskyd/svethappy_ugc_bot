@@ -69,22 +69,49 @@ async function onboarding(conversation, ctx) {
 
     await consentCtx.editMessageText("✅ Спасибо за согласие!");
 
-    // Step 2 – email
-    await ctx.reply("📧 Пожалуйста, введите ваш <b>email</b>:", {parse_mode: "HTML"});
-
+    // Step 2 – email (loop until confirmed)
     let email = null;
     while (!email) {
-        const emailCtx = await conversation.waitFor("message:text");
-        const input = emailCtx.message.text.trim();
-        if (EMAIL_RE.test(input)) {
-            email = input;
+        await ctx.reply("📧 Пожалуйста, введите ваш <b>email</b>:", {parse_mode: "HTML"});
+
+        let candidate = null;
+        while (!candidate) {
+            const emailCtx = await conversation.waitFor("message:text");
+            const input = emailCtx.message.text.trim();
+            if (EMAIL_RE.test(input)) {
+                candidate = input;
+            } else {
+                await emailCtx.reply("⚠️ Некорректный email. Пожалуйста, введите действующий адрес электронной почты.");
+            }
+        }
+
+        // Step 3 – confirmation
+        const confirmKeyboard = new InlineKeyboard()
+            .text("✅ Верно", "confirm")
+            .text("✏️ Исправить", "retry");
+
+        await ctx.reply(
+            `📧 Вы указали email: <b>${candidate}</b>\n\nВсё верно?`,
+            {parse_mode: "HTML", reply_markup: confirmKeyboard}
+        );
+
+        const confirmCtx = await conversation.waitForCallbackQuery(["confirm", "retry"]);
+        await confirmCtx.answerCallbackQuery();
+
+        if (confirmCtx.callbackQuery.data === "confirm") {
+            await confirmCtx.editMessageText(`✅ Email <b>${candidate}</b> подтверждён.`, {parse_mode: "HTML"});
+            email = candidate;
         } else {
-            await emailCtx.reply("⚠️ Некорректный email. Пожалуйста, введите действующий адрес электронной почты.");
+            await confirmCtx.editMessageText("✏️ Хорошо, давайте попробуем ещё раз.");
         }
     }
 
-    // Step 3 – save to Firestore & show summary
-    await db.collection("svethappy_ugc").doc(String(ctx.from.id)).set({
+    // Step 4 – save to Firestore (move old email to backupEmails, keep last 5)
+    const docRef = db.collection("svethappy_ugc").doc(String(ctx.from.id));
+    const existing = await docRef.get();
+    const existingData = existing.exists ? existing.data() : {};
+
+    const baseData = {
         telegramId: ctx.from.id,
         firstName: ctx.from.first_name,
         lastName: ctx.from.last_name ?? null,
@@ -93,9 +120,19 @@ async function onboarding(conversation, ctx) {
         isBot: ctx.from.is_bot ?? false,
         email,
         consentGiven: true,
-        createdAt: FieldValue.serverTimestamp(),
-    });
+        updatedAt: FieldValue.serverTimestamp(),
+        ...(!existing.exists && {createdAt: FieldValue.serverTimestamp()}),
+    };
 
+    if (existingData.email && existingData.email !== email) {
+        const prev = Array.isArray(existingData.backupEmails) ? existingData.backupEmails : [];
+        const backupEmails = [...new Set([...prev, existingData.email])].slice(-5);
+        baseData.backupEmails = backupEmails;
+    }
+
+    await docRef.set(baseData, {merge: true});
+
+    // Step 5 – show summary
     await ctx.reply(formatUserSummary(ctx.from, email), {parse_mode: "HTML"});
 }
 
