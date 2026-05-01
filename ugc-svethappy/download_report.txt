@@ -1,0 +1,53 @@
+=== ASSET DOWNLOAD REPORT ===
+  SKIP  IMG_2583.JPG                                        17162
+  SKIP  IMG_3340.jpeg                                       37703
+  SKIP  IMG_3630.JPG                                        27161
+  SKIP  IMG_3634.JPEG                                       37875
+  SKIP  IMG_5519.JPEG                                       5372
+  SKIP  L37A1030.jpg                                        60694
+  SKIP  Reels_and_UGC_cours_.png                            215664
+  SKIP  css2                                                7600
+  SKIP  learn_UGC_logo.JPG                                  25029
+  SKIP  logo_ugc_guide.PNG.webp                             45766
+  SKIP  reels_intensiv.jpg                                  8537
+  SKIP  tilda-blocks-page115224436.min.css                  13410
+  SKIP  tilda-blocks-page115224436.min.js                   105
+  STUB  tilda-cards-1.0.min.css                             366
+  SKIP  tilda-cards-1.0.min.js                              2163
+  SKIP  tilda-events-1.0.min.js                             13439
+  SKIP  tilda-grid-3.0.min.css                              4514
+  SKIP  tilda-lazyload-1.0.min.js                           20358
+  SKIP  tilda-polyfill-1.0.min.js                           185641
+  SKIP  tilda-scripts-3.0.min.js                            23008
+  SKIP  tilda-stat-1.0(1).min.js                            9690
+  SKIP  tilda-stat-1.0.min.js                               9690
+  SKIP  tildafavicon.ico                                    1718
+
+=== HTML PATCH: 4 replacement(s) made ===
+
+=== FINAL INDEX_FILES ===
+  IMG_2583.JPG                                            17,162 bytes
+  IMG_3340.jpeg                                           37,703 bytes
+  IMG_3630.JPG                                            27,161 bytes
+  IMG_3634.JPEG                                           37,875 bytes
+  IMG_5519.JPEG                                            5,372 bytes
+  L37A1030.jpg                                            60,694 bytes
+  Reels_and_UGC_cours_.png                               215,664 bytes
+  css2                                                     7,600 bytes
+  custom.js                                                3,031 bytes
+  learn_UGC_logo.JPG                                      25,029 bytes
+  logo_ugc_guide.PNG.webp                                 45,766 bytes
+  reels_intensiv.jpg                                       8,537 bytes
+  tilda-blocks-page115224436.min.css                      13,410 bytes
+  tilda-blocks-page115224436.min.js                          105 bytes *** SMALL ***
+  tilda-cards-1.0.min.css                                    366 bytes *** SMALL ***
+  tilda-cards-1.0.min.js                                   2,163 bytes
+  tilda-events-1.0.min.js                                 13,439 bytes
+  tilda-fallback-1.0.min.js                                  793 bytes
+  tilda-grid-3.0.min.css                                   4,514 bytes
+  tilda-lazyload-1.0.min.js                               20,358 bytes
+  tilda-polyfill-1.0.min.js                              185,641 bytes
+  tilda-scripts-3.0.min.js                                23,008 bytes
+  tilda-stat-1.0(1).min.js                                 9,690 bytes
+  tilda-stat-1.0.min.js                                    9,690 bytes
+  tildafavicon.ico                                         1,718 bytes
