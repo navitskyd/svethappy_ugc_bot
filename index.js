@@ -1,47 +1,97 @@
 import "dotenv/config";
-import express from "express";
-import { Bot, webhookCallback } from "grammy";
-const {
-  BOT_TOKEN,
-  WEBHOOK_PATH = "/webhook",
-} = process.env;
+import {Bot, InlineKeyboard} from "grammy";
+import {conversations, createConversation} from "@grammyjs/conversations";
+
+const {BOT_TOKEN} = process.env;
 if (!BOT_TOKEN) throw new Error("BOT_TOKEN is not set in .env");
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function formatUserSummary(from, email) {
+    const lines = [
+        "✅ <b>Данные успешно собраны!</b>",
+        "",
+        `📧 <b>Email:</b> ${email}`,
+        `🆔 <b>Telegram ID:</b> <code>${from.id}</code>`,
+        `👤 <b>Имя:</b> ${from.first_name}`,
+    ];
+    if (from.last_name) lines.push(`👤 <b>Фамилия:</b> ${from.last_name}`);
+    if (from.username) lines.push(`🔗 <b>Username:</b> @${from.username}`);
+    if (from.language_code) lines.push(`🌐 <b>Язык:</b> ${from.language_code}`);
+    lines.push(`🤖 <b>Бот:</b> ${from.is_bot ? "Да" : "Нет"}`);
+    return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Conversation
+// ---------------------------------------------------------------------------
+
+async function onboarding(conversation, ctx) {
+    // Step 1 – consent
+    const consentKeyboard = new InlineKeyboard()
+        .text("✅ Согласен", "agree")
+        .text("❌ Не согласен", "disagree");
+
+    await ctx.reply(
+        "📋 Для продолжения нам необходимо ваше согласие на <b>сбор и обработку персональных данных</b>.\n\n" +
+        "Мы собираем: имя, Telegram ID, username и email.\n\n" +
+        "Вы согласны?",
+        {parse_mode: "HTML", reply_markup: consentKeyboard}
+    );
+
+    const consentCtx = await conversation.waitForCallbackQuery(["agree", "disagree"]);
+    await consentCtx.answerCallbackQuery();
+
+    if (consentCtx.callbackQuery.data === "disagree") {
+        await consentCtx.editMessageText(
+            "❌ Вы отказались от обработки персональных данных. Без согласия мы не можем продолжить.\n\n" +
+            "Если передумаете — введите /start."
+        );
+        return;
+    }
+
+    await consentCtx.editMessageText("✅ Спасибо за согласие!");
+
+    // Step 2 – email
+    await ctx.reply("📧 Пожалуйста, введите ваш <b>email</b>:", {parse_mode: "HTML"});
+
+    let email = null;
+    while (!email) {
+        const emailCtx = await conversation.waitFor("message:text");
+        const input = emailCtx.message.text.trim();
+        if (EMAIL_RE.test(input)) {
+            email = input;
+        } else {
+            await emailCtx.reply("⚠️ Некорректный email. Пожалуйста, введите действующий адрес электронной почты.");
+        }
+    }
+
+    // Step 3 – summary
+    await ctx.reply(formatUserSummary(ctx.from, email), {parse_mode: "HTML"});
+}
+
 // ---------------------------------------------------------------------------
 // Bot
 // ---------------------------------------------------------------------------
+
 const bot = new Bot(BOT_TOKEN);
+
+bot.use(conversations());
+bot.use(createConversation(onboarding));
+
 bot.command("start", async (ctx) => {
-  const name = ctx.from?.first_name ?? "there";
+    const name = ctx.from?.first_name ?? "друг";
   await ctx.reply(
-    `Hi <b>${name}</b>! 👋 I'm SvetHappy UGC Bot.\nSend me anything and I'll echo it back.`,
+      `👋 Привет, <b>${name}</b>! Добро пожаловать в SvetHappy UGC Bot.`,
     { parse_mode: "HTML" }
   );
+    await ctx.conversation.enter("onboarding");
 });
-bot.command("help", async (ctx) => {
-  await ctx.reply(
-    "Available commands:\n/start – Start the bot\n/help  – Show this help message"
-  );
-});
-bot.on("message:text", async (ctx) => {
-  await ctx.reply(ctx.message.text);
-});
+
 bot.catch((err) => {
   console.error("Bot error:", err);
 });
-// ------------------------------------------------------------import express from "ereimport { Bot, webhookCallback--const {
-  BOT_TOKEN,
-  WEBHOOK_PATH = "/webho--  BOT_ns  WEBHOOK_Pre} = process.env;
-if (!BOT_T))if (!BOT_TOKEN)OO// ------------------------------------------------------------re// Bot
-// ---------------------------------------------------------------------// ----const bot = new Bot(BOT_TOKEN);
-bot.command("start", async (ctx) => {
-  const nbot.command("start", async (ct--  const name = ctx.from?.first_name --  await ctx.reply(
-    `Hi <b>${name}</b>! ?
-node --input-type=module --check < /Users/dzmitry.navitski/IdeaProjects/svethappy_ugc_bot/index.js && echo "Syntax OK"
-node --input-type=module --check < /Users/dzmitry.navitski/IdeaProjects/svethappy_ugc_bot/index.js; echo "exit: $?"
-cd /Users/dzmitry.navitski/IdeaProjects/svethappy_ugc_bot && node -e "import('./index.js').then(() => console.log('OK')).catch(e => console.error(e.message))"
-cd /Users/dzmitry.navitski/IdeaProjects/svethappy_ugc_bot && npx vercel --version 2>/dev/null && npx vercel ls 2>&1 | head -20
-cd /Users/dzmitry.navitski/IdeaProjects/svethappy_ugc_bot && cat .vercel/project.json 2>/dev/null || echo "not found"
-cat > /Users/dzmitry.navitski/IdeaProjects/svethappy_ugc_bot/.env << 'EOF'
-BOT_TOKEN=8782926474:AAH8PemeEsxCyJMiy8aEu54NQvbPdfTxGFI
-WEBHOOK_URL=https://your-project.vercel.app
-WEBHOOK_PATH=/webhook
