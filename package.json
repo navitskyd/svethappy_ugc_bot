@@ -5,10 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "webhook:set": "node webhook_manager.js set",
-    "webhook:delete": "node webhook_manager.js delete",
-    "webhook:info": "node webhook_manager.js info"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
