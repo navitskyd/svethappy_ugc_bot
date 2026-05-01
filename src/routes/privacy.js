@@ -135,23 +135,20 @@ router.get("/privacy", (_req, res) => {
       margin-top: 40px;
     }
     /* language visibility */
-    body.en .content-ru, body.en .title-ru { display: none; }
-    body.ru .content-en, body.ru .title-en { display: none; }
-    body.en .divider { display: none; }
-    body.ru .divider { display: none; }
+    body.en .content-ru, body.en .title-ru, body.en .divider { display: none; }
+    body.ru .content-en, body.ru .title-en, body.ru .divider { display: none; }
 
     @media (max-width: 520px) {
       .section { padding: 18px 16px; }
     }
   </style>
 </head>
-<body class="both">
+<body class="ru">
 <header>
   <h1>Privacy Policy / Политика конфиденциальности</h1>
   <div class="lang-tabs">
-    <button onclick="setLang('both')" class="active" id="tab-both">EN + RU</button>
+    <button onclick="setLang('ru')" class="active" id="tab-ru">Русский</button>
     <button onclick="setLang('en')" id="tab-en">English</button>
-    <button onclick="setLang('ru')" id="tab-ru">Русский</button>
   </div>
 </header>
 
@@ -311,7 +308,6 @@ router.get("/privacy", (_req, res) => {
 <script>
   function setLang(lang) {
     document.body.className = lang;
-    document.getElementById('tab-both').classList.toggle('active', lang === 'both');
     document.getElementById('tab-en').classList.toggle('active', lang === 'en');
     document.getElementById('tab-ru').classList.toggle('active', lang === 'ru');
   }
