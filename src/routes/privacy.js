@@ -21,6 +21,7 @@ router.get("/privacy", (_req, res) => {
       --muted: #718096;
       --en: #8ec5fc;
       --ru: #e0c3fc;
+      --pt: #9ae6b4;
     }
     html { scroll-behavior: smooth; }
     body {
@@ -112,15 +113,20 @@ router.get("/privacy", (_req, res) => {
       font-weight: 700;
       color: var(--ru);
     }
-    .content-en, .content-ru {
+    .title-pt {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--pt);
+    }
+    .content-en, .content-ru, .content-pt {
       font-size: 0.92rem;
       color: #a0aec0;
     }
-    .content-en ul, .content-ru ul {
+    .content-en ul, .content-ru ul, .content-pt ul {
       padding-left: 18px;
       margin-top: 6px;
     }
-    .content-en li, .content-ru li { margin-bottom: 4px; }
+    .content-en li, .content-ru li, .content-pt li { margin-bottom: 4px; }
     .divider {
       border: none;
       border-top: 1px solid var(--border);
@@ -135,8 +141,9 @@ router.get("/privacy", (_req, res) => {
       margin-top: 40px;
     }
     /* language visibility */
-    body.en .content-ru, body.en .title-ru, body.en .divider { display: none; }
-    body.ru .content-en, body.ru .title-en, body.ru .divider { display: none; }
+    body.en .content-ru, body.en .title-ru, body.en .content-pt, body.en .title-pt, body.en .divider { display: none; }
+    body.ru .content-en, body.ru .title-en, body.ru .content-pt, body.ru .title-pt, body.ru .divider { display: none; }
+    body.pt .content-en, body.pt .title-en, body.pt .content-ru, body.pt .title-ru, body.pt .divider { display: none; }
 
     @media (max-width: 520px) {
       .section { padding: 18px 16px; }
@@ -149,6 +156,7 @@ router.get("/privacy", (_req, res) => {
   <div class="lang-tabs">
     <button onclick="setLang('ru')" class="active" id="tab-ru">Русский</button>
     <button onclick="setLang('en')" id="tab-en">English</button>
+    <button onclick="setLang('pt')" id="tab-pt">Português</button>
   </div>
 </header>
 
@@ -160,6 +168,7 @@ router.get("/privacy", (_req, res) => {
       <div class="section-titles">
         <div class="title-en">Data Controller</div>
         <div class="title-ru">Контролер данных</div>
+        <div class="title-pt">Responsável pelo Tratamento</div>
       </div>
     </div>
     <div class="content-en">
@@ -175,6 +184,13 @@ router.get("/privacy", (_req, res) => {
       Адрес: Rua General Manuel Diogo Neto, 179 1ESQ, 2765-334 Estoril, Portugal.<br/>
       Контактный email: <a href="mailto:svethappy.support@gmail.com">svethappy.support@gmail.com</a>
     </div>
+    <hr class="divider"/>
+    <div class="content-pt">
+      O responsável pelo tratamento é <strong>Sviatlana Navitskaya</strong>, Trabalhador Independente registado em Portugal.<br/>
+      NIF: <strong>334825334</strong><br/>
+      Morada: Rua General Manuel Diogo Neto, 179 1ESQ, 2765-334 Estoril, Portugal.<br/>
+      Email de contacto: <a href="mailto:svethappy.support@gmail.com">svethappy.support@gmail.com</a>
+    </div>
   </div>
 
   <div class="section">
@@ -183,6 +199,7 @@ router.get("/privacy", (_req, res) => {
       <div class="section-titles">
         <div class="title-en">Data Collection</div>
         <div class="title-ru">Сбор данных</div>
+        <div class="title-pt">Recolha de Dados</div>
       </div>
     </div>
     <div class="content-en">
@@ -202,6 +219,15 @@ router.get("/privacy", (_req, res) => {
         <li><strong>Платежные данные:</strong> обрабатываются Stripe. Мы не храним данные ваших карт.</li>
       </ul>
     </div>
+    <hr class="divider"/>
+    <div class="content-pt">
+      Recolhemos:
+      <ul>
+        <li><strong>Fornecido por si:</strong> Endereço de email.</li>
+        <li><strong>Automaticamente via Telegram:</strong> ID do utilizador, nome próprio/apelido e username (conforme definido no seu perfil público do Telegram).</li>
+        <li><strong>Dados de pagamento:</strong> Processados pela Stripe. Não armazenamos os dados do seu cartão.</li>
+      </ul>
+    </div>
   </div>
 
   <div class="section">
@@ -210,6 +236,7 @@ router.get("/privacy", (_req, res) => {
       <div class="section-titles">
         <div class="title-en">Purpose of Processing</div>
         <div class="title-ru">Цель обработки</div>
+        <div class="title-pt">Finalidade do Tratamento</div>
       </div>
     </div>
     <div class="content-en">
@@ -229,6 +256,15 @@ router.get("/privacy", (_req, res) => {
         <li>Отправки уведомлений и чеков об оплате.</li>
       </ul>
     </div>
+    <hr class="divider"/>
+    <div class="content-pt">
+      Utilizamos os seus dados para:
+      <ul>
+        <li>Fornecer acesso a produtos digitais.</li>
+        <li>Identificar a sua compra no bot do Telegram.</li>
+        <li>Enviar notificações de serviço e recibos de transação.</li>
+      </ul>
+    </div>
   </div>
 
   <div class="section">
@@ -237,6 +273,7 @@ router.get("/privacy", (_req, res) => {
       <div class="section-titles">
         <div class="title-en">Legal Basis (GDPR)</div>
         <div class="title-ru">Правовое основание (GDPR)</div>
+        <div class="title-pt">Base Legal (RGPD)</div>
       </div>
     </div>
     <div class="content-en">
@@ -246,6 +283,10 @@ router.get("/privacy", (_req, res) => {
     <div class="content-ru">
       Обработка основана на вашем <strong>Согласии</strong> (ст. 6(1)(a) GDPR), данном при запуске бота и вводе email, а также на <strong>Исполнении договора</strong> (ст. 6(1)(b) GDPR).
     </div>
+    <hr class="divider"/>
+    <div class="content-pt">
+      O tratamento baseia-se no seu <strong>Consentimento</strong> (Art. 6.º, n.º 1, al. a) RGPD) dado ao iniciar o bot e fornecer o email, e na <strong>Execução do Contrato</strong> (Art. 6.º, n.º 1, al. b) RGPD).
+    </div>
   </div>
 
   <div class="section">
@@ -254,6 +295,7 @@ router.get("/privacy", (_req, res) => {
       <div class="section-titles">
         <div class="title-en">Data Transfers</div>
         <div class="title-ru">Передача данных</div>
+        <div class="title-pt">Transferências de Dados</div>
       </div>
     </div>
     <div class="content-en">
@@ -263,6 +305,10 @@ router.get("/privacy", (_req, res) => {
     <div class="content-ru">
       Данные обрабатываются через <strong>Telegram</strong> и <strong>Stripe</strong>. Ваши данные могут передаваться за пределы ЕЭЗ. Мы обеспечиваем безопасность через стандартные договорные условия (SCCs).
     </div>
+    <hr class="divider"/>
+    <div class="content-pt">
+      Os dados são tratados através do <strong>Telegram</strong> (Messenger Inc.) e da <strong>Stripe</strong> (Stripe Inc.). Os seus dados podem ser transferidos para fora do EEE. Garantimos a segurança através de Cláusulas Contratuais Padrão (SCCs).
+    </div>
   </div>
 
   <div class="section">
@@ -271,6 +317,7 @@ router.get("/privacy", (_req, res) => {
       <div class="section-titles">
         <div class="title-en">Your Rights</div>
         <div class="title-ru">Ваши права</div>
+        <div class="title-pt">Os Seus Direitos</div>
       </div>
     </div>
     <div class="content-en">
@@ -280,6 +327,10 @@ router.get("/privacy", (_req, res) => {
     <div class="content-ru">
       Согласно GDPR, у вас есть право на <strong>доступ</strong>, <strong>исправление</strong> или <strong>удаление</strong> ваших данных, а также право <strong>отозвать согласие</strong> в любой момент, написав нам на email.
     </div>
+    <hr class="divider"/>
+    <div class="content-pt">
+      Ao abrigo do RGPD, tem direito a <strong>aceder</strong>, <strong>retificar</strong> ou <strong>eliminar</strong> os seus dados, e o direito de <strong>retirar o consentimento</strong> a qualquer momento, contactando-nos por email.
+    </div>
   </div>
 
   <div class="section">
@@ -288,6 +339,7 @@ router.get("/privacy", (_req, res) => {
       <div class="section-titles">
         <div class="title-en">Retention Period</div>
         <div class="title-ru">Срок хранения</div>
+        <div class="title-pt">Período de Conservação</div>
       </div>
     </div>
     <div class="content-en">
@@ -296,6 +348,10 @@ router.get("/privacy", (_req, res) => {
     <hr class="divider"/>
     <div class="content-ru">
       Мы храним ваш email до <strong>отзыва согласия</strong>. Записи о платежах хранятся в соответствии с налоговым законодательством Португалии.
+    </div>
+    <hr class="divider"/>
+    <div class="content-pt">
+      Conservamos o seu email até à <strong>retirada do consentimento</strong>. Os registos de pagamento são conservados conforme exigido pela legislação fiscal portuguesa.
     </div>
   </div>
 
@@ -310,6 +366,7 @@ router.get("/privacy", (_req, res) => {
     document.body.className = lang;
     document.getElementById('tab-en').classList.toggle('active', lang === 'en');
     document.getElementById('tab-ru').classList.toggle('active', lang === 'ru');
+    document.getElementById('tab-pt').classList.toggle('active', lang === 'pt');
   }
 </script>
 </body>
