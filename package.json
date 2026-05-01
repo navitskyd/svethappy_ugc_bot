@@ -14,6 +14,9 @@
     "@grammyjs/conversations": "^2.1.1",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "firebase-admin": "^13.8.0",
+    "firebase-admin": "^13.0.0",
+    "firebase-admin": "^13.8.0",
     "grammy": "^1.42.0"
   }
 }

@@ -2,9 +2,21 @@ import "dotenv/config";
 import express from "express";
 import {Bot, InlineKeyboard, webhookCallback} from "grammy";
 import {conversations, createConversation} from "@grammyjs/conversations";
+import {cert, getApps, initializeApp} from "firebase-admin/app";
+import {FieldValue, getFirestore} from "firebase-admin/firestore";
 
-const {BOT_TOKEN} = process.env;
+const {BOT_TOKEN, FIREBASE_SERVICE_ACCOUNT} = process.env;
 if (!BOT_TOKEN) throw new Error("BOT_TOKEN is not set in .env");
+if (!FIREBASE_SERVICE_ACCOUNT) throw new Error("FIREBASE_SERVICE_ACCOUNT is not set in .env");
+
+// ---------------------------------------------------------------------------
+// Firestore
+// ---------------------------------------------------------------------------
+
+if (!getApps().length) {
+    initializeApp({credential: cert(JSON.parse(FIREBASE_SERVICE_ACCOUNT))});
+}
+const db = getFirestore();
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -71,7 +83,19 @@ async function onboarding(conversation, ctx) {
         }
     }
 
-    // Step 3 – summary
+    // Step 3 – save to Firestore & show summary
+    await db.collection("svethappy_ugc").doc(String(ctx.from.id)).set({
+        telegramId: ctx.from.id,
+        firstName: ctx.from.first_name,
+        lastName: ctx.from.last_name ?? null,
+        username: ctx.from.username ?? null,
+        languageCode: ctx.from.language_code ?? null,
+        isBot: ctx.from.is_bot ?? false,
+        email,
+        consentGiven: true,
+        createdAt: FieldValue.serverTimestamp(),
+    });
+
     await ctx.reply(formatUserSummary(ctx.from, email), {parse_mode: "HTML"});
 }
 
