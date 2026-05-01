@@ -134,6 +134,12 @@ async function onboarding(conversation, ctx) {
 
     // Step 5 – show summary
     await ctx.reply(formatUserSummary(ctx.from, email), {parse_mode: "HTML"});
+
+    await ctx.reply(
+        "🎉 Добро пожаловать в наше сообщество!\n\n" +
+        "Переходи на наш сайт и приятного просмотра 👇\n\n" +
+        "🌐 https://svethappy-ugc-bot.vercel.app/",
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -259,8 +265,8 @@ app.get("/", (_req, res) => {
   </div>
 
   <div class="buttons">
-    <a class="btn btn-primary" href="${UGC_CLUB_URL}">🎬 Enter UGC Club</a>
-    <a class="btn btn-secondary" href="${PRIVATE_COMMUNITY_URL}">🔒 Join Private Community</a>
+    <a class="btn btn-primary" href="${UGC_CLUB_URL}">🎬 Вступить в UGC Клуб</a>
+    <a class="btn btn-secondary" href="${PRIVATE_COMMUNITY_URL}">🔒 Войти в закрытое сообщество</a>
   </div>
 </body>
 </html>`);
