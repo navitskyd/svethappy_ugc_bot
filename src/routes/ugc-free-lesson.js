@@ -113,8 +113,8 @@ router.get("/ugc-free-lesson", (_req, res) => {
   </div>
 
   <div class="buttons">
-    <a class="btn btn-primary" id="btn-ugc" href="https://svetahappy.web.app/ugc">🎬 Вступить в UGC Клуб</a>
-    <a class="btn btn-secondary" href="${PRIVATE_COMMUNITY_URL}">🔒 Войти в закрытое сообщество</a>
+    <a class="btn btn-primary" id="btn-ugc" href="${UGC_CLUB_URL}">🎬 UGC Каталог</a>
+    <a class="btn btn-secondary" href="${PRIVATE_COMMUNITY_URL}">🔒 Закрытая группа</a>
   </div>
 
   <footer>
@@ -126,14 +126,12 @@ router.get("/ugc-free-lesson", (_req, res) => {
   <script>
     const params = new URLSearchParams(window.location.search);
     const email = params.get("email") || "";
-    const telegramId = params.get("telegramId") || "";
     const btn = document.getElementById("btn-ugc");
 
     const base = btn.href.split("?")[0];
     const existing = btn.href.includes("?") ? btn.href.split("?")[1] : "";
     const extra = new URLSearchParams(existing);
-    if (email) extra.set("locked_prefilled_email", email);
-    if (telegramId) extra.set("client_reference_id", telegramId);
+    if (email) extra.set("email", email);
     btn.href = base + "?" + extra.toString();
   </script>
 </body>
