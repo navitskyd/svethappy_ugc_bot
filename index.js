@@ -10,7 +10,6 @@ const {
 } = process.env;
 
 if (!BOT_TOKEN) throw new Error("BOT_TOKEN is not set in .env");
-if (!WEBHOOK_URL) throw new Error("WEBHOOK_URL is not set in .env");
 
 // ---------------------------------------------------------------------------
 // Bot
@@ -54,23 +53,8 @@ app.get("/health", (_req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// Start
+// Export for Vercel (serverless) – no app.listen()
 // ---------------------------------------------------------------------------
 
-const webhookFullUrl = `${WEBHOOK_URL.replace(/\/$/, "")}${WEBHOOK_PATH}`;
-
-app.listen(Number(PORT), async () => {
-    console.log(`Server listening on port ${PORT}`);
-    await bot.api.setWebhook(webhookFullUrl);
-    console.log(`Webhook set → ${webhookFullUrl}`);
-});
-
-// Remove webhook on shutdown
-const shutdown = async () => {
-    console.log("Shutting down – removing webhook …");
-    await bot.api.deleteWebhook();
-    process.exit(0);
-};
-process.once("SIGINT", shutdown);
-process.once("SIGTERM", shutdown);
+export default app;
 
