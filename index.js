@@ -106,10 +106,18 @@ async function onboarding(conversation, ctx) {
         }
     }
 
-    // Step 4 – save to Firestore (move old email to backupEmails, keep last 5)
+    // Step 4 – save to Firestore (move old email to backupEmails, keep last 5, no duplicates)
     const docRef = db.collection("svethappy_ugc").doc(String(ctx.from.id));
     const existing = await docRef.get();
     const existingData = existing.exists ? existing.data() : {};
+
+    const prev = Array.isArray(existingData.backupEmails) ? existingData.backupEmails : [];
+
+    // Add old email to backup list if it changed, then deduplicate and remove current email
+    const merged = existingData.email && existingData.email !== email
+        ? [...prev, existingData.email]
+        : [...prev];
+    const backupEmails = [...new Set(merged)].filter(e => e !== email).slice(-5);
 
     const baseData = {
         telegramId: ctx.from.id,
@@ -120,17 +128,11 @@ async function onboarding(conversation, ctx) {
         isBot: ctx.from.is_bot ?? false,
         email,
         consentGiven: true,
+        backupEmails,
         updatedAt: FieldValue.serverTimestamp(),
         ...(!existing.exists && {createdAt: FieldValue.serverTimestamp()}),
     };
 
-    if (existingData.email && existingData.email !== email) {
-        const prev = Array.isArray(existingData.backupEmails) ? existingData.backupEmails : [];
-        const backupEmails = [...new Set([...prev, existingData.email])]
-            .filter(e => e !== email)
-            .slice(-5);
-        baseData.backupEmails = backupEmails;
-    }
 
     await docRef.set(baseData, {merge: true});
 
