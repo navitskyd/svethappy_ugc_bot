@@ -13,10 +13,11 @@ export async function onboarding(conversation, ctx) {
     const policyLink = PRIVACY_POLICY_URL ? `<a href="${PRIVACY_POLICY_URL}">Политикой конфиденциальности</a>` : "Политикой конфиденциальности";
     const offerLink = OFFER_URL ? `<a href="${OFFER_URL}">Офертой</a>` : "Офертой";
     await ctx.reply(
-        "📋 Для продолжения нам необходимо ваше согласие на <b>сбор и обработку персональных данных</b>.\n\n" +
-        "Мы собираем: имя, Telegram ID, username и email.\n\n" +
-        "Нажимая кнопку \"Согласен\", вы соглашаетесь с ${policyLink} и ${offerLink}" +
-        "Вы согласны?",
+        `📋 Для продолжения нам необходимо ваше согласие на <b>сбор и обработку персональных данных</b>
+        Мы собираем: имя, Telegram ID, username и email.
+        Нажимая кнопку "Согласен", вы соглашаетесь с ${policyLink} и ${offerLink}
+        
+        Вы согласны?`,
         {parse_mode: "HTML", reply_markup: consentKeyboard}
     );
 
@@ -38,7 +39,7 @@ export async function onboarding(conversation, ctx) {
     while (!email) {
 
         await ctx.reply(
-            `«Введите ваш email»`,
+            'Введите ваш email',
             {parse_mode: "HTML", link_preview_options: {is_disabled: true}}
         );
 
