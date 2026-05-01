@@ -428,12 +428,13 @@
     </div>
 
     <footer>
-        &copy; ${new Date().getFullYear()} Sviatlana Navitskaya &mdash; NIF 334825334, Portugal &mdash;
+        &copy; <span id="year"></span> Sviatlana Navitskaya &mdash; NIF 334825334, Portugal &mdash;
         <a href="mailto:svethappy.support@gmail.com">svethappy.support@gmail.com</a>
     </footer>
 </div>
 
 <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
     function setLang(lang) {
         document.body.className = lang;
         document.getElementById('tab-en').classList.toggle('active', lang === 'en');
