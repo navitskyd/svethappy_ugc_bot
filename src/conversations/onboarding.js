@@ -6,43 +6,27 @@ import {EMAIL_RE, formatUserSummary} from "../helpers.js";
 const {LANDING_PAGE, PRIVACY_POLICY_URL = "", OFFER_URL = ""} = process.env;
 
 export async function onboarding(conversation, ctx) {
-    // Step 1 – consent
-    const consentKeyboard = new InlineKeyboard()
-        .text("✅ Согласен", "agree")
-        .text("❌ Не согласен", "disagree");
-    const policyLink = PRIVACY_POLICY_URL ? `<a href="${PRIVACY_POLICY_URL}">Политикой конфиденциальности</a>` : "Политикой конфиденциальности";
-    const offerLink = OFFER_URL ? `<a href="${OFFER_URL}">Офертой</a>` : "Офертой";
+    const policyLink = PRIVACY_POLICY_URL
+        ? `<a href="${PRIVACY_POLICY_URL}">Политикой конфиденциальности</a>`
+        : "Политикой конфиденциальности";
+    const offerLink = OFFER_URL
+        ? `<a href="${OFFER_URL}">Офертой</a>`
+        : "Офертой";
+
+    // Step 1 – single greeting + consent + email prompt
     await ctx.reply(
-        `📋 Для продолжения нам необходимо ваше согласие на <b>сбор и обработку персональных данных</b>
-        Мы собираем: имя, Telegram ID, username и email.
-        Нажимая кнопку "Согласен", вы соглашаетесь с ${policyLink} и ${offerLink}
-        
-        Вы согласны?`,
-        {parse_mode: "HTML", reply_markup: consentKeyboard}
+        `👋 Привет!\n\n` +
+        `Чтобы получить доступ к <b>SvetHappy UGC</b>, мне понадобится ваш email.\n\n` +
+        `Вводя свои данные, вы даёте согласие на обработку данных вашего профиля Telegram и email в соответствии с ${policyLink} и принимаете условия ${offerLink}.\n\n` +
+        `🔒 Ваши данные в безопасности и обрабатываются согласно стандартам GDPR.\n\n` +
+        `Пожалуйста, введите ваш email ниже:`,
+        {parse_mode: "HTML", link_preview_options: {is_disabled: true}}
     );
 
-    const consentCtx = await conversation.waitForCallbackQuery(["agree", "disagree"]);
-    await consentCtx.answerCallbackQuery();
-
-    if (consentCtx.callbackQuery.data === "disagree") {
-        await consentCtx.editMessageText(
-            "❌ Вы отказались от обработки персональных данных. Без согласия мы не можем продолжить.\n\n" +
-            "Если передумаете — введите /start."
-        );
-        return;
-    }
-
-    await consentCtx.editMessageText("✅ Спасибо за согласие!");
-
-    // Step 2 – email (loop until confirmed)
+    // Step 2 – email loop until confirmed
     let email = null;
     while (!email) {
-
-        await ctx.reply(
-            'Введите ваш email',
-            {parse_mode: "HTML", link_preview_options: {is_disabled: true}}
-        );
-
+        // Wait for a valid email format
         let candidate = null;
         while (!candidate) {
             const emailCtx = await conversation.waitFor("message:text");
@@ -54,7 +38,7 @@ export async function onboarding(conversation, ctx) {
             }
         }
 
-        // Step 3 – confirmation
+        // Step 3 – ask to confirm
         const confirmKeyboard = new InlineKeyboard()
             .text("✅ Верно", "confirm")
             .text("✏️ Исправить", "retry");
@@ -72,13 +56,14 @@ export async function onboarding(conversation, ctx) {
             email = candidate;
         } else {
             await confirmCtx.editMessageText("✏️ Хорошо, давайте попробуем ещё раз.");
+            await ctx.reply("📧 Введите ваш email:");
         }
     }
 
     // Step 4 – save to Firestore (move old email to backupEmails, keep last 5, no duplicates)
     const docRef = db.collection("svethappy_ugc").doc(String(ctx.from.id));
-    const existing = await docRef.get();
-    const existingData = existing.exists ? existing.data() : {};
+    const snapshot = await docRef.get();
+    const existingData = snapshot.exists ? snapshot.data() : {};
 
     const prev = Array.isArray(existingData.backupEmails) ? existingData.backupEmails : [];
     const merged = existingData.email && existingData.email !== email
@@ -86,7 +71,7 @@ export async function onboarding(conversation, ctx) {
         : [...prev];
     const backupEmails = [...new Set(merged)].filter(e => e !== email).slice(-5);
 
-    const baseData = {
+    await docRef.set({
         telegramId: ctx.from.id,
         firstName: ctx.from.first_name,
         lastName: ctx.from.last_name ?? null,
@@ -97,10 +82,8 @@ export async function onboarding(conversation, ctx) {
         consentGiven: true,
         backupEmails,
         updatedAt: FieldValue.serverTimestamp(),
-        ...(!existing.exists && {createdAt: FieldValue.serverTimestamp()}),
-    };
-
-    await docRef.set(baseData, {merge: true});
+        ...(!snapshot.exists && {createdAt: FieldValue.serverTimestamp()}),
+    }, {merge: true});
 
     // Step 5 – show summary and navigation link
     await ctx.reply(formatUserSummary(ctx.from, email), {parse_mode: "HTML"});
@@ -111,4 +94,3 @@ export async function onboarding(conversation, ctx) {
         `🌐 ${LANDING_PAGE}?email=` + encodeURIComponent(email) + "&telegramId=" + ctx.from.id,
     );
 }
-
