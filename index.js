@@ -5,7 +5,7 @@ import {conversations, createConversation} from "@grammyjs/conversations";
 import {cert, getApps, initializeApp} from "firebase-admin/app";
 import {FieldValue, getFirestore} from "firebase-admin/firestore";
 
-const {BOT_TOKEN, FIREBASE_SERVICE_ACCOUNT} = process.env;
+const {BOT_TOKEN, FIREBASE_SERVICE_ACCOUNT, LANDING_PAGE} = process.env;
 if (!BOT_TOKEN) throw new Error("BOT_TOKEN is not set in .env");
 if (!FIREBASE_SERVICE_ACCOUNT) throw new Error("FIREBASE_SERVICE_ACCOUNT is not set in .env");
 
@@ -142,7 +142,7 @@ async function onboarding(conversation, ctx) {
     await ctx.reply(
         "🎉 Добро пожаловать в наше сообщество!\n\n" +
         "Переходи на наш сайт и приятного просмотра 👇\n\n" +
-        "🌐 https://svethappy-ugc-bot.vercel.app/",
+        `🌐 ${LANDING_PAGE}?email=` + encodeURIComponent(email) + "&telegramId=" + ctx.from.id,
     );
 }
 
@@ -269,9 +269,23 @@ app.get("/", (_req, res) => {
   </div>
 
   <div class="buttons">
-    <a class="btn btn-primary" href="${UGC_CLUB_URL}">🎬 Вступить в UGC Клуб</a>
+    <a class="btn btn-primary" id="btn-ugc" href="${UGC_CLUB_URL}">
+    🎬 Вступить в UGC Клуб</a>
     <a class="btn btn-secondary" href="${PRIVATE_COMMUNITY_URL}">🔒 Войти в закрытое сообщество</a>
   </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get("email") || "";
+    const telegramId = params.get("telegramId") || "";
+    const btn = document.getElementById("btn-ugc");
+    const base = btn.href.split("?")[0];
+    const existing = btn.href.includes("?") ? btn.href.split("?")[1] : "";
+    const extra = new URLSearchParams(existing);
+    if (email) extra.set("locked_prefilled_email", email);
+    if (telegramId) extra.set("client_reference_id", telegramId);
+    btn.href = base + "?" + extra.toString();
+  </script>
 </body>
 </html>`);
 });
