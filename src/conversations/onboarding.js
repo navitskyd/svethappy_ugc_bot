@@ -10,10 +10,12 @@ export async function onboarding(conversation, ctx) {
     const consentKeyboard = new InlineKeyboard()
         .text("✅ Согласен", "agree")
         .text("❌ Не согласен", "disagree");
-
+    const policyLink = PRIVACY_POLICY_URL ? `<a href="${PRIVACY_POLICY_URL}">Политикой конфиденциальности</a>` : "Политикой конфиденциальности";
+    const offerLink = OFFER_URL ? `<a href="${OFFER_URL}">Офертой</a>` : "Офертой";
     await ctx.reply(
         "📋 Для продолжения нам необходимо ваше согласие на <b>сбор и обработку персональных данных</b>.\n\n" +
         "Мы собираем: имя, Telegram ID, username и email.\n\n" +
+        "Нажимая кнопку \"Согласен\", вы соглашаетесь с ${policyLink} и ${offerLink}" +
         "Вы согласны?",
         {parse_mode: "HTML", reply_markup: consentKeyboard}
     );
@@ -34,10 +36,9 @@ export async function onboarding(conversation, ctx) {
     // Step 2 – email (loop until confirmed)
     let email = null;
     while (!email) {
-        const policyLink = PRIVACY_POLICY_URL ? `<a href="${PRIVACY_POLICY_URL}">Политикой конфиденциальности</a>` : "Политикой конфиденциальности";
-        const offerLink = OFFER_URL ? `<a href="${OFFER_URL}">Офертой</a>` : "Офертой";
+
         await ctx.reply(
-            `«Для получения доступа введите ваш email. Нажимая кнопку "Отправить", вы соглашаетесь с ${policyLink} и ${offerLink}»`,
+            `«Введите ваш email»`,
             {parse_mode: "HTML", link_preview_options: {is_disabled: true}}
         );
 
