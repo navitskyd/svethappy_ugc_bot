@@ -98,58 +98,6 @@ router.get("/ugc-free-lesson", (_req, res) => {
     }
     footer a:hover { color: #fff; }
     footer .separator { margin: 0 4px; opacity: 0.4; }
-    .consent-wrap {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      max-width: 480px;
-      margin-bottom: 24px;
-      cursor: pointer;
-    }
-    .consent-wrap input[type="checkbox"] {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      min-width: 20px;
-      border: 2px solid rgba(255,255,255,0.4);
-      border-radius: 5px;
-      background: transparent;
-      cursor: pointer;
-      position: relative;
-      transition: border-color 0.15s, background 0.15s;
-      margin-top: 1px;
-    }
-    .consent-wrap input[type="checkbox"]:checked {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      border-color: #667eea;
-    }
-    .consent-wrap input[type="checkbox"]:checked::after {
-      content: "✓";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #fff;
-      font-size: 13px;
-      font-weight: 700;
-    }
-    .consent-wrap label {
-      font-size: 0.85rem;
-      color: #a0aec0;
-      line-height: 1.5;
-      cursor: pointer;
-    }
-    .consent-wrap label a { color: #c3b1e1; text-decoration: underline; }
-    .consent-wrap label a:hover { color: #fff; }
-    .btn-primary:disabled,
-    .btn-primary[aria-disabled="true"] {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
-      pointer-events: none;
-    }
   </style>
 </head>
 <body>
@@ -164,13 +112,8 @@ router.get("/ugc-free-lesson", (_req, res) => {
     </iframe>
   </div>
 
-  <label class="consent-wrap">
-    <input type="checkbox" id="consent-checkbox"/>
-    <span>Я ознакомлен(а) и согласен(на) с условиями <a href="${OFFER_URL}" target="_blank" rel="noopener noreferrer">Публичной оферты</a> и <a href="${PRIVACY_POLICY_URL}" target="_blank" rel="noopener noreferrer">Политики конфиденциальности</a>.</span>
-  </label>
-
   <div class="buttons">
-    <a class="btn btn-primary" id="btn-ugc" href="${UGC_CLUB_URL}" aria-disabled="true">🎬 Вступить в UGC Клуб</a>
+    <a class="btn btn-primary" id="btn-ugc" href="https://svetahappy.web.app/ugc">🎬 Вступить в UGC Клуб</a>
     <a class="btn btn-secondary" href="${PRIVATE_COMMUNITY_URL}">🔒 Войти в закрытое сообщество</a>
   </div>
 
@@ -185,20 +128,6 @@ router.get("/ugc-free-lesson", (_req, res) => {
     const email = params.get("email") || "";
     const telegramId = params.get("telegramId") || "";
     const btn = document.getElementById("btn-ugc");
-    const checkbox = document.getElementById("consent-checkbox");
-
-    function updateBtn() {
-      if (checkbox.checked) {
-        btn.removeAttribute("aria-disabled");
-        btn.style.pointerEvents = "";
-      } else {
-        btn.setAttribute("aria-disabled", "true");
-        btn.style.pointerEvents = "none";
-      }
-    }
-
-    checkbox.addEventListener("change", updateBtn);
-    updateBtn();
 
     const base = btn.href.split("?")[0];
     const existing = btn.href.includes("?") ? btn.href.split("?")[1] : "";
