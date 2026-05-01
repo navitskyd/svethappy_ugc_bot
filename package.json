@@ -1,0 +1,21 @@
+{
+  "name": "svethappy_ugc_bot",
+  "version": "1.0.0",
+  "description": "fd",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "webhook:set": "node webhook_manager.js set",
+    "webhook:delete": "node webhook_manager.js delete",
+    "webhook:info": "node webhook_manager.js info"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "grammy": "^1.42.0"
+  }
+}
