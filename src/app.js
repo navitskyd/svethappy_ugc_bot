@@ -1,7 +1,7 @@
 import express from "express";
 import {webhookCallback} from "grammy";
 import {bot} from "./bot.js";
-import homeRouter from "./routes/home.js";
+import homeRouter from "./routes/ugc-free-lesson.js";
 import privacyRouter from "./routes/privacy.js";
 
 const {WEBHOOK_PATH = "/webhook"} = process.env;

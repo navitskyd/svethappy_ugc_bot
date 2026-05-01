@@ -10,7 +10,7 @@ const {
 
 const router = Router();
 
-router.get("/", (_req, res) => {
+router.get("/ugc-free-lesson", (_req, res) => {
     res.send(`<!DOCTYPE html>
 <html lang="ru">
 <head>
