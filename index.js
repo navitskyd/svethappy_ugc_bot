@@ -1,5 +1,6 @@
 import "dotenv/config";
-import {Bot, InlineKeyboard} from "grammy";
+import express from "express";
+import {Bot, InlineKeyboard, webhookCallback} from "grammy";
 import {conversations, createConversation} from "@grammyjs/conversations";
 
 const {BOT_TOKEN} = process.env;
@@ -95,3 +96,17 @@ bot.command("start", async (ctx) => {
 bot.catch((err) => {
   console.error("Bot error:", err);
 });
+
+// ---------------------------------------------------------------------------
+// Express – export for Vercel (serverless)
+// ---------------------------------------------------------------------------
+
+const {WEBHOOK_PATH = "/webhook"} = process.env;
+
+const app = express();
+app.use(express.json());
+
+app.post(WEBHOOK_PATH, webhookCallback(bot, "express"));
+app.get("/health", (_req, res) => res.json({status: "ok"}));
+
+export default app;
