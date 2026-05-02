@@ -40,31 +40,41 @@ app.post("/processPayment", async (req, res) => {
         const docRef = db.collection("svethappy_ugc").doc(String(telegramId));
         const docSnap = await docRef.get();
 
-        // Fetch all documents and search manually (structure: docId=telegramId, fields={email, backupEmails, ...})
-        const allDocs = await db.collection("svethappy_ugc").get();
-
         let verified = false;
         let emailLinkedTelegramId = "не найден в базе";
         let emailFoundIn = "";
 
-        for (const doc of allDocs.docs) {
-            const data = doc.data();
-            const docEmails = [
-                ...(data.email ? [data.email.toLowerCase()] : []),
-                ...(Array.isArray(data.backupEmails) ? data.backupEmails.map(e => e.toLowerCase()) : [])
-            ];
+        if (docSnap.exists) {
+            const data = docSnap.data();
 
-            if (docEmails.includes(emailLower)) {
-                // Found which doc owns this email
-                if (doc.id === String(telegramId)) {
-                    verified = true;
-                    break;
-                } else {
-                    // Email belongs to a different telegramId
+            // Step 1: check primary email
+            if (data.email && data.email.toLowerCase() === emailLower) {
+                verified = true;
+            }
+
+            // Step 2: check backupEmails in same doc
+            if (!verified && Array.isArray(data.backupEmails) &&
+                data.backupEmails.some(e => e.toLowerCase() === emailLower)) {
+                verified = true;
+            }
+        }
+
+        // Step 3: full DB scan only if still not verified
+        if (!verified) {
+            const allDocs = await db.collection("svethappy_ugc").get();
+            for (const doc of allDocs.docs) {
+                if (doc.id === String(telegramId)) continue; // already checked above
+                const data = doc.data();
+                const docEmails = [
+                    ...(data.email ? [data.email.toLowerCase()] : []),
+                    ...(Array.isArray(data.backupEmails) ? data.backupEmails.map(e => e.toLowerCase()) : [])
+                ];
+                if (docEmails.includes(emailLower)) {
                     emailLinkedTelegramId = doc.id;
                     emailFoundIn = data.email && data.email.toLowerCase() === emailLower
                         ? " (основной email)"
                         : " (в backupEmails)";
+                    break;
                 }
             }
         }
@@ -88,6 +98,7 @@ app.post("/processPayment", async (req, res) => {
                 `  Email ${email} привязан к Telegram ID: ${emailLinkedTelegramId}${emailFoundIn}\n\n` +
                 `Требуется проверка.`;
             await bot.api.sendMessage(ADMIN_ID, alertText);
+
         }
 
         const text = message || `✅ Оплата получена!\n\nEmail: ${email}\nTelegram ID: ${telegramId}`;
