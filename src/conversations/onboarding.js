@@ -106,6 +106,7 @@ export async function onboarding(conversation, ctx, startPayload) {
             await confirmCtx.editMessageText(`✅ Email <b>${candidate}</b> подтверждён.`, {parse_mode: "HTML"});
             email = candidate;
         } else {
+            candidate = null;
             await confirmCtx.editMessageText("✏️ Хорошо, давайте попробуем ещё раз.");
             await ctx.reply("📧 Введите ваш email:");
         }
