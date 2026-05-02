@@ -49,15 +49,30 @@ app.post("/processPayment", async (req, res) => {
         }
 
         if (!verified) {
+            // Find what telegramId is linked to
+            const telegramLinkedEmail = !snapshot.empty
+                ? (snapshot.docs[0].data().email || "—")
+                : "не найден в базе";
+
+            // Find what email is linked to
+            const emailSnapshot = await db.collection("svethappy_ugc")
+                .where("email", "==", email.toLowerCase())
+                .limit(1)
+                .get();
+            const emailLinkedTelegramId = !emailSnapshot.empty
+                ? (emailSnapshot.docs[0].data().telegramId || "—")
+                : "не найден в базе";
+
             const alertText =
-                `⚠️ processPayment: несовпадение данных!\n` +
-                `Email: ${email}\n` +
-                `Telegram ID: ${telegramId}\n\n` +
-                `Эти данные не привязаны к одной записи в Firestore. Требуется проверка.`;
+                `⚠️ processPayment: несовпадение данных!\n\n` +
+                `Входящие данные:\n` +
+                `  Email: ${email}\n` +
+                `  Telegram ID: ${telegramId}\n\n` +
+                `В Firestore:\n` +
+                `  Telegram ID ${telegramId} привязан к email: ${telegramLinkedEmail}\n` +
+                `  Email ${email} привязан к Telegram ID: ${emailLinkedTelegramId}\n\n` +
+                `Требуется проверка.`;
             await bot.api.sendMessage(ADMIN_ID, alertText);
-            return res.status(422).json({
-                error: "email and telegramId do not match any linked record in the database"
-            });
         }
 
         const text = message || `✅ Оплата получена!\n\nEmail: ${email}\nTelegram ID: ${telegramId}`;
