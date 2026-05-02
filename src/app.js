@@ -40,13 +40,39 @@ app.post("/processPayment", async (req, res) => {
         const docRef = db.collection("svethappy_ugc").doc(String(telegramId));
         const docSnap = await docRef.get();
 
+        // Search by email across all docs (primary)
+        const emailSnapshot = await db.collection("svethappy_ugc")
+            .where("email", "==", emailLower)
+            .limit(1)
+            .get();
+
+        // Search by email across all docs (backupEmails)
+        const backupEmailSnapshot = emailSnapshot.empty
+            ? await db.collection("svethappy_ugc")
+                .where("backupEmails", "array-contains", emailLower)
+                .limit(1)
+                .get()
+            : null;
+
         let verified = false;
+
+        // Forward: telegramId doc contains the email
         if (docSnap.exists) {
             const data = docSnap.data();
             const primaryMatch = data.email && data.email.toLowerCase() === emailLower;
             const backupMatch = Array.isArray(data.backupEmails) &&
                 data.backupEmails.some(e => e.toLowerCase() === emailLower);
             verified = primaryMatch || backupMatch;
+        }
+
+        // Reverse: email found in some doc and that doc's ID matches the telegramId
+        if (!verified) {
+            const reverseDocId = !emailSnapshot.empty
+                ? emailSnapshot.docs[0].id
+                : (!backupEmailSnapshot?.empty ? backupEmailSnapshot.docs[0].id : null);
+            if (reverseDocId && reverseDocId === String(telegramId)) {
+                verified = true;
+            }
         }
 
         if (!verified) {
@@ -56,24 +82,9 @@ app.post("/processPayment", async (req, res) => {
                 ? docSnap.data().backupEmails.join(", ") || "—"
                 : "—";
 
-            // Which doc contains this email as primary
-            const emailSnapshot = await db.collection("svethappy_ugc")
-                .where("email", "==", emailLower)
-                .limit(1)
-                .get();
-
-            // Which doc contains this email in backupEmails
-            const backupEmailSnapshot = emailSnapshot.empty
-                ? await db.collection("svethappy_ugc")
-                    .where("backupEmails", "array-contains", emailLower)
-                    .limit(1)
-                    .get()
-                : null;
-
             let emailLinkedTelegramId = "не найден в базе";
             let emailFoundIn = "";
             if (!emailSnapshot.empty) {
-                // Doc ID is the telegramId
                 emailLinkedTelegramId = emailSnapshot.docs[0].id;
                 emailFoundIn = " (основной email)";
             } else if (backupEmailSnapshot && !backupEmailSnapshot.empty) {
@@ -92,9 +103,6 @@ app.post("/processPayment", async (req, res) => {
                 `  Email ${email} привязан к Telegram ID: ${emailLinkedTelegramId}${emailFoundIn}\n\n` +
                 `Требуется проверка.`;
             await bot.api.sendMessage(ADMIN_ID, alertText);
-            return res.status(422).json({
-                error: "email and telegramId do not match any linked record in the database"
-            });
         }
 
         const text = message || `✅ Оплата получена!\n\nEmail: ${email}\nTelegram ID: ${telegramId}`;
