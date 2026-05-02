@@ -26,14 +26,15 @@ app.get("/info", (_req, res) => {
 });
 
 app.post("/processPayment", async (req, res) => {
-    let {email, telegramId, message} = req.body;
+    const {email, telegramId, message} = req.body;
 
     if (!email && !telegramId) {
         return res.status(400).json({error: "email or telegramId are required"});
     }
 
-    if(!telegramId){
-        telegramId = buildKey(email);
+    let userKey = telegramId;
+    if(!userKey){
+        userKey = buildKey(email);
     }
 
     const ADMIN_ID = 553384344;
@@ -41,8 +42,8 @@ app.post("/processPayment", async (req, res) => {
     try {
         const emailLower = email.toLowerCase();
 
-        // Doc ID is telegramId
-        const docRef = db.collection(CUSTOMERS_COLLECTION).doc(String(telegramId));
+        // Doc ID is userKey
+        const docRef = db.collection(CUSTOMERS_COLLECTION).doc(String(userKey));
         const docSnap = await docRef.get();
 
         let verified = false;
@@ -68,7 +69,7 @@ app.post("/processPayment", async (req, res) => {
         if (!verified) {
             const allDocs = await db.collection(CUSTOMERS_COLLECTION).get();
             for (const doc of allDocs.docs) {
-                if (doc.id === String(telegramId)) continue; // already checked above
+                if (doc.id === String(userKey)) continue; // already checked above
                 const data = doc.data();
                 const docEmails = [
                     ...(data.email ? [data.email.toLowerCase()] : []),
@@ -95,18 +96,18 @@ app.post("/processPayment", async (req, res) => {
                 `⚠️ processPayment: несовпадение данных!\n\n` +
                 `Входящие данные:\n` +
                 `  Email: ${email}\n` +
-                `  Telegram ID: ${telegramId}\n\n` +
+                `  Telegram ID: ${userKey}\n\n` +
                 `В Firestore:\n` +
-                `  Telegram ID ${telegramId} привязан к email: ${telegramLinkedEmail}\n` +
-                `  Telegram ID ${telegramId} backupEmails: ${telegramLinkedBackupEmails}\n` +
+                `  Telegram ID ${userKey} привязан к email: ${telegramLinkedEmail}\n` +
+                `  Telegram ID ${userKey} backupEmails: ${telegramLinkedBackupEmails}\n` +
                 `  Email ${email} привязан к Telegram ID: ${emailLinkedTelegramId}${emailFoundIn}\n\n` +
                 `Требуется проверка.`;
             await bot.api.sendMessage(ADMIN_ID, alertText);
 
         }
 
-        const text = message || `✅ Оплата получена!\n\nEmail: ${email}\nTelegram ID: ${telegramId}`;
         if(telegramId) {
+            const text = message || `✅ Оплата получена!\n\nEmail: ${email}\nTelegram ID: ${telegramId}`;
             await bot.api.sendMessage(telegramId, text);
         }
         res.json({success: true});
