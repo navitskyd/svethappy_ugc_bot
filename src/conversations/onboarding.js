@@ -6,6 +6,13 @@ import {ugcFlow} from "./ugcFlow.js";
 
 const {LANDING_PAGE, PRIVACY_POLICY_URL = "", OFFER_URL = ""} = process.env;
 
+// Temporary store for start payloads keyed by userId
+const pendingPayloads = new Map();
+
+export function setStartPayload(userId, payload) {
+    pendingPayloads.set(String(userId), payload);
+}
+
 function isStart(ctx) {
     return ctx.message?.text?.trim().startsWith("/start");
 }
@@ -13,12 +20,15 @@ function isStart(ctx) {
 /**
  * @param {import("@grammyjs/conversations").Conversation} conversation
  * @param {import("grammy").Context} ctx
- * @param {{ context?: string, instagramNick?: string }} [startPayload]
  */
-export async function onboarding(conversation, ctx, startPayload) {
-    console.log("startPayload:", startPayload);
-    const flowContext = (startPayload?.context ?? "").toUpperCase();
-    const instagramNick = startPayload?.instagramNick ?? null;
+export async function onboarding(conversation, ctx) {
+    // Retrieve and clear payload stored before entering
+    const payload = pendingPayloads.get(String(ctx.from.id)) ?? {};
+    pendingPayloads.delete(String(ctx.from.id));
+
+    console.log("startPayload:", payload);
+    const flowContext = (payload.context ?? "").toUpperCase();
+    const instagramNick = payload.instagramNick ?? null;
     const policyLink = PRIVACY_POLICY_URL
         ? `<a href="${PRIVACY_POLICY_URL}">Политикой конфиденциальности</a>`
         : "Политикой конфиденциальности";
