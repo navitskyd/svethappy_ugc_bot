@@ -17,22 +17,5 @@ document.addEventListener('DOMContentLoaded', () => {
     svgElem.setAttribute('viewBox', '0 0 192 192');
   });
 
-
-  // delete elem with id=tildacopy
-    /*
-      var tildacopyElem = document.getElementById('tildacopy');
-  
-    if (tildacopyElem) {
-      var nextScript = tildacopyElem.nextElementSibling;
-      if (nextScript && nextScript.tagName.toLowerCase() === 'script') {
-        nextScript.parentNode.removeChild(nextScript);
-      }
-    }
-  
-    if (tildacopyElem) {
-      setTimeout(()=>tildacopyElem.parentNode.removeChild(tildacopyElem),2000);
-    }
-    */
-   
 });
 

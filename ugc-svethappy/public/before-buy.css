@@ -1,0 +1,68 @@
+.stripe-consent-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    color: #fff;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    max-width: 380px;
+}
+
+.stripe-consent-wrap input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border: 2px solid rgba(230, 230, 230, 0.35);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    margin-top: 2px;
+    transition: background 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+}
+
+.stripe-consent-wrap input[type="checkbox"]:checked {
+    background: #e6e6e6;
+    border-color: #e6e6e6;
+}
+
+.stripe-consent-wrap input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 6px;
+    height: 10px;
+    border: 2px solid #2e2c2c;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+}
+
+.stripe-consent-wrap label {
+    font-size: 11px;
+    line-height: 1.45;
+    color: rgba(230, 230, 230, 0.55);
+    cursor: pointer;
+}
+
+.stripe-consent-wrap label a {
+    color: rgba(230, 230, 230, 0.75);
+    text-decoration: underline;
+}
+
+.stripe-consent-wrap label a:hover {
+    color: #e6e6e6;
+}
+
+/* disabled state for the buy button */
+a.t-btn.stripe-btn-disabled {
+    opacity: 0.35 !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+}
