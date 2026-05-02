@@ -102,7 +102,9 @@ app.post("/processPayment", async (req, res) => {
         }
 
         const text = message || `✅ Оплата получена!\n\nEmail: ${email}\nTelegram ID: ${telegramId}`;
-        await bot.api.sendMessage(telegramId, text);
+        if(telegramId) {
+            await bot.api.sendMessage(telegramId, text);
+        }
         res.json({success: true});
     } catch (err) {
         console.error("processPayment error:", err);
