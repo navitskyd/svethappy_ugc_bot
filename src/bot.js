@@ -16,13 +16,13 @@ bot.command("start", async (ctx) => {
     await ctx.conversation.exit(); // reset any active scenario
     const name = ctx.from?.first_name ?? "друг";
 
-    // Parse deep-link payload: /start <context>_<instagramNick>
+    // Parse deep-link payload: /start <context>_<param1>
     // e.g. /start UGC_johndoe  or  /start Travel
     const raw = ctx.match?.trim() ?? "";
     const parts = raw.split("-");
     const startPayload = {
         context: parts[0] ?? "",
-        instagramNick: parts[1] ?? null,
+        param1: parts[1] ?? null,
     };
 
     await ctx.reply(

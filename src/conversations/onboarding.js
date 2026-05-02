@@ -13,12 +13,12 @@ function isStart(ctx) {
 /**
  * @param {import("@grammyjs/conversations").Conversation} conversation
  * @param {import("grammy").Context} ctx
- * @param {{ context?: string, instagramNick?: string }} [startPayload]
+ * @param {{ context?: string, param1?: string }} [startPayload]
  */
 export async function onboarding(conversation, ctx, startPayload) {
     console.log("startPayload:", startPayload);
     const flowContext = (startPayload?.context ?? "").toUpperCase();
-    const instagramNick = startPayload?.instagramNick ?? null;
+    const param1 = startPayload?.param1 ?? null;
     const policyLink = PRIVACY_POLICY_URL
         ? `<a href="${PRIVACY_POLICY_URL}">Политикой конфиденциальности</a>`
         : "Политикой конфиденциальности";
@@ -139,7 +139,7 @@ export async function onboarding(conversation, ctx, startPayload) {
         email,
         consentGiven: true,
         backupEmails,
-        ...(instagramNick && {instagramNick}),
+        instagramNick: (flowContext === "UGC") ? (param1 && {param1}) : existingData.instagramNick ?? null,
         ...(contexts.length > 0 && {context: contexts}),
         updatedAt: FieldValue.serverTimestamp(),
         ...(!snapshot.exists && {createdAt: FieldValue.serverTimestamp()}),
@@ -150,7 +150,7 @@ export async function onboarding(conversation, ctx, startPayload) {
 
     // Step 6 – context-specific flow
     if (flowContext === "UGC") {
-        await ugcFlow(ctx, email, instagramNick);
+        await ugcFlow(ctx, email, param1);
     } else {
         await ctx.reply(
             "🎉 Добро пожаловать в наше сообщество!\n\n" +
