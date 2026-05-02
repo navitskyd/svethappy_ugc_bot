@@ -86,7 +86,6 @@ app.post("/processPayment", async (req, res) => {
                 ? docSnap.data().backupEmails.join(", ") || "—"
                 : "—";
 
-
             const alertText =
                 `⚠️ processPayment: несовпадение данных!\n\n` +
                 `Входящие данные:\n` +
