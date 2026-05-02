@@ -19,18 +19,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // delete elem with id=tildacopy
-  var tildacopyElem = document.getElementById('tildacopy');
-
-  //delete next <script> element after tildacopyElem
-  if (tildacopyElem) {
-    var nextScript = tildacopyElem.nextElementSibling;
-    if (nextScript && nextScript.tagName.toLowerCase() === 'script') {
-      nextScript.parentNode.removeChild(nextScript);
+    /*
+      var tildacopyElem = document.getElementById('tildacopy');
+  
+    if (tildacopyElem) {
+      var nextScript = tildacopyElem.nextElementSibling;
+      if (nextScript && nextScript.tagName.toLowerCase() === 'script') {
+        nextScript.parentNode.removeChild(nextScript);
+      }
     }
-  }
-
-  if (tildacopyElem) {
-    setTimeout(()=>tildacopyElem.parentNode.removeChild(tildacopyElem),2000);
-  }
+  
+    if (tildacopyElem) {
+      setTimeout(()=>tildacopyElem.parentNode.removeChild(tildacopyElem),2000);
+    }
+    */
+   
 });
 
