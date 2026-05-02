@@ -57,7 +57,11 @@ export async function onboarding(conversation, ctx, startPayload) {
     );
 
     // Step 2 – email loop until confirmed
-    let email = null;
+    const docRef1 = db.collection(CUSTOMERS_COLLECTION).doc(String(ctx.from.id));
+    const snapshot1 = await conversation.external(() => docRef1.get());
+    const existingData1 = snapshot1.exists ? snapshot1.data() : {};
+    let email = existingData1.email ?? null; // pre-fill from DB if available
+
     while (!email) {
         // Wait for a valid email format
         let candidate = null;
