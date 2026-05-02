@@ -13,14 +13,34 @@ export async function onboarding(conversation, ctx) {
         ? `<a href="${OFFER_URL}">Офертой</a>`
         : "Офертой";
 
-    // Step 1 – single greeting + consent + email prompt
+    // Step 1 – greeting + consent with Agree / Disagree buttons
+    const consentKeyboard = new InlineKeyboard()
+        .text("✅ Согласен", "consent_agree")
+        .text("❌ Не согласен", "consent_disagree");
+
     await ctx.reply(
         `👋 Привет!\n\n` +
         `Чтобы получить доступ к <b>бесплатному уроку по UGC</b>, мне понадобится ваш email.\n\n` +
         `Вводя свои данные, вы даёте согласие на обработку данных вашего профиля Telegram и email в соответствии с ${policyLink} и принимаете условия ${offerLink}.\n\n` +
-        `🔒 Ваши данные в безопасности и обрабатываются согласно стандартам GDPR.\n\n` +
-        `Пожалуйста, введите ваш email ниже:`,
-        {parse_mode: "HTML", link_preview_options: {is_disabled: true}}
+        `🔒 Ваши данные в безопасности и обрабатываются согласно стандартам GDPR.`,
+        {parse_mode: "HTML", link_preview_options: {is_disabled: true}, reply_markup: consentKeyboard}
+    );
+
+    const consentCtx = await conversation.waitForCallbackQuery(["consent_agree", "consent_disagree"]);
+    await consentCtx.answerCallbackQuery();
+
+    if (consentCtx.callbackQuery.data === "consent_disagree") {
+        await consentCtx.editMessageText(
+            "❌ Вы отказались от обработки персональных данных. Без согласия мы не можем продолжить.\n\n" +
+            "Если передумаете — введите /start.",
+            {parse_mode: "HTML"}
+        );
+        return;
+    }
+
+    await consentCtx.editMessageText(
+        `✅ Спасибо за согласие!\n\nПожалуйста, введите ваш email ниже:`,
+        {parse_mode: "HTML"}
     );
 
     // Step 2 – email loop until confirmed
