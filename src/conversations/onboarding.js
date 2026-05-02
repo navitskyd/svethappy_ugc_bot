@@ -107,6 +107,12 @@ export async function onboarding(conversation, ctx, startPayload) {
         : [...prev];
     const backupEmails = [...new Set(merged)].filter(e => e !== email).slice(-5);
 
+    // Merge context[] without duplicates
+    const existingContexts = Array.isArray(existingData.context) ? existingData.context : [];
+    const contexts = flowContext
+        ? [...new Set([...existingContexts, flowContext])]
+        : existingContexts;
+
     await docRef.set({
         telegramId: ctx.from.id,
         firstName: ctx.from.first_name,
@@ -118,6 +124,7 @@ export async function onboarding(conversation, ctx, startPayload) {
         consentGiven: true,
         backupEmails,
         ...(instagramNick && {instagramNick}),
+        ...(contexts.length > 0 && {context: contexts}),
         updatedAt: FieldValue.serverTimestamp(),
         ...(!snapshot.exists && {createdAt: FieldValue.serverTimestamp()}),
     }, {merge: true});

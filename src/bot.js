@@ -19,7 +19,7 @@ bot.command("start", async (ctx) => {
     // Parse deep-link payload: /start <context>_<instagramNick>
     // e.g. /start UGC_johndoe  or  /start Travel
     const raw = ctx.match?.trim() ?? "";
-    const parts = raw.split("_");
+    const parts = raw.split("-");
     const startPayload = {
         context: parts[0] ?? "",
         instagramNick: parts[1] ?? null,
