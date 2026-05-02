@@ -1,4 +1,4 @@
-import {Bot, InlineKeyboard} from "grammy";
+import {Bot} from "grammy";
 import {conversations, createConversation} from "@grammyjs/conversations";
 import {onboarding} from "./conversations/onboarding.js";
 import {db} from "./firestore.js";
@@ -30,19 +30,16 @@ bot.command("profile", async (ctx) => {
     const snap = await db.collection("svethappy_ugc").doc(String(ctx.from.id)).get();
     const email = snap.exists && snap.data().email ? snap.data().email : "не указан";
 
-    const keyboard = new InlineKeyboard()
-        .url("📧 Связаться с поддержкой", `mailto:${support}`);
-
     await ctx.reply(
         "👤 <b>Ваш профиль</b>\n\n" +
         `📧 <b>Email:</b> <code>${email}</code>\n\n` +
         `📄 <b>Документы:</b>\n` +
         `🔒 <a href="${privacy}">Политика конфиденциальности</a>\n` +
-        `📋 <a href="${offer}">Публичная оферта</a>`,
+        `📋 <a href="${offer}">Публичная оферта</a>\n\n` +
+        `💬 <b>Поддержка:</b> <a href="mailto:${support}">${support}</a>`,
         {
             parse_mode: "HTML",
             link_preview_options: {is_disabled: true},
-            reply_markup: keyboard,
         }
     );
 });
