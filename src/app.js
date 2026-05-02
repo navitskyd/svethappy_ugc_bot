@@ -10,5 +10,20 @@ app.use(express.json());
 app.post(WEBHOOK_PATH, webhookCallback(bot, "express"));
 app.get("/health", (_req, res) => res.json({status: "ok"}));
 
-export default app;
+const NON_SENSITIVE_KEYS = [
+    "PRIVACY_POLICY_URL",
+    "OFFER_URL",
+    "FREE_UGC_VIDEO_ID",
+    "UGC_SITE_URL",
+    "PRIVATE_COMMUNITY_URL",
+];
 
+app.get("/info", (_req, res) => {
+    const info = {};
+    for (const key of NON_SENSITIVE_KEYS) {
+        info[key] = process.env[key] ?? null;
+    }
+    res.json(info);
+});
+
+export default app;
