@@ -40,38 +40,32 @@ app.post("/processPayment", async (req, res) => {
         const docRef = db.collection("svethappy_ugc").doc(String(telegramId));
         const docSnap = await docRef.get();
 
-        // Search by email across all docs (primary)
-        const emailSnapshot = await db.collection("svethappy_ugc")
-            .where("email", "==", emailLower)
-            .limit(1)
-            .get();
-
-        // Search by email across all docs (backupEmails)
-        const backupEmailSnapshot = emailSnapshot.empty
-            ? await db.collection("svethappy_ugc")
-                .where("backupEmails", "array-contains", emailLower)
-                .limit(1)
-                .get()
-            : null;
+        // Fetch all documents and search manually (structure: docId=telegramId, fields={email, backupEmails, ...})
+        const allDocs = await db.collection("svethappy_ugc").get();
 
         let verified = false;
+        let emailLinkedTelegramId = "не найден в базе";
+        let emailFoundIn = "";
 
-        // Forward: telegramId doc contains the email
-        if (docSnap.exists) {
-            const data = docSnap.data();
-            const primaryMatch = data.email && data.email.toLowerCase() === emailLower;
-            const backupMatch = Array.isArray(data.backupEmails) &&
-                data.backupEmails.some(e => e.toLowerCase() === emailLower);
-            verified = primaryMatch || backupMatch;
-        }
+        for (const doc of allDocs.docs) {
+            const data = doc.data();
+            const docEmails = [
+                ...(data.email ? [data.email.toLowerCase()] : []),
+                ...(Array.isArray(data.backupEmails) ? data.backupEmails.map(e => e.toLowerCase()) : [])
+            ];
 
-        // Reverse: email found in some doc and that doc's ID matches the telegramId
-        if (!verified) {
-            const reverseDocId = !emailSnapshot.empty
-                ? emailSnapshot.docs[0].id
-                : (!backupEmailSnapshot?.empty ? backupEmailSnapshot.docs[0].id : null);
-            if (reverseDocId && reverseDocId === String(telegramId)) {
-                verified = true;
+            if (docEmails.includes(emailLower)) {
+                // Found which doc owns this email
+                if (doc.id === String(telegramId)) {
+                    verified = true;
+                    break;
+                } else {
+                    // Email belongs to a different telegramId
+                    emailLinkedTelegramId = doc.id;
+                    emailFoundIn = data.email && data.email.toLowerCase() === emailLower
+                        ? " (основной email)"
+                        : " (в backupEmails)";
+                }
             }
         }
 
@@ -82,15 +76,6 @@ app.post("/processPayment", async (req, res) => {
                 ? docSnap.data().backupEmails.join(", ") || "—"
                 : "—";
 
-            let emailLinkedTelegramId = "не найден в базе";
-            let emailFoundIn = "";
-            if (!emailSnapshot.empty) {
-                emailLinkedTelegramId = emailSnapshot.docs[0].id;
-                emailFoundIn = " (основной email)";
-            } else if (backupEmailSnapshot && !backupEmailSnapshot.empty) {
-                emailLinkedTelegramId = backupEmailSnapshot.docs[0].id;
-                emailFoundIn = " (в backupEmails)";
-            }
 
             const alertText =
                 `⚠️ processPayment: несовпадение данных!\n\n` +
