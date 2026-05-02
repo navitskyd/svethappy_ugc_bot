@@ -3,8 +3,16 @@ import {FieldValue} from "firebase-admin/firestore";
 import {CUSTOMERS_COLLECTION, db} from "../firestore.js";
 import {EMAIL_RE, formatUserSummary} from "../helpers.js";
 import {ugcFlow} from "./ugcFlow.js";
+import {paymentFlow} from "./paymentFlow.js";
 
 const {LANDING_PAGE, PRIVACY_POLICY_URL = "", OFFER_URL = ""} = process.env;
+
+// Temporary store for start payloads keyed by userId
+const pendingPayloads = new Map();
+
+export function setStartPayload(userId, payload) {
+    pendingPayloads.set(String(userId), payload);
+}
 
 function isStart(ctx) {
     return ctx.message?.text?.trim().startsWith("/start");
@@ -15,10 +23,21 @@ function isStart(ctx) {
  * @param {import("grammy").Context} ctx
  * @param {{ context?: string, param1?: string }} [startPayload]
  */
-export async function onboarding(conversation, ctx, startPayload) {
+export async function onboarding(conversation, ctx) {
+    // Retrieve and clear payload stored before entering
+    const startPayload = pendingPayloads.get(String(ctx.from.id)) ?? {};
+    pendingPayloads.delete(String(ctx.from.id));
+
     console.log("startPayload:", startPayload);
     const flowContext = (startPayload?.context ?? "").toUpperCase();
     const param1 = startPayload?.param1 ?? null;
+
+    // ── PAYMENT context: handled entirely without user interaction ────────
+    if (flowContext === "PAYMENT") {
+        await paymentFlow(ctx, param1); // param1 = stripe session id
+        return;
+    }
+
     const policyLink = PRIVACY_POLICY_URL
         ? `<a href="${PRIVACY_POLICY_URL}">Политикой конфиденциальности</a>`
         : "Политикой конфиденциальности";
