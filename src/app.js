@@ -1,7 +1,7 @@
 import express from "express";
 import {webhookCallback} from "grammy";
 import {bot} from "./bot.js";
-import {db} from "./firestore.js";
+import {CUSTOMERS_COLLECTION, db} from "./firestore.js";
 
 const {WEBHOOK_PATH = "/webhook"} = process.env;
 
@@ -37,7 +37,7 @@ app.post("/processPayment", async (req, res) => {
         const emailLower = email.toLowerCase();
 
         // Doc ID is telegramId
-        const docRef = db.collection("svethappy_ugc").doc(String(telegramId));
+        const docRef = db.collection(CUSTOMERS_COLLECTION).doc(String(telegramId));
         const docSnap = await docRef.get();
 
         let verified = false;
@@ -61,7 +61,7 @@ app.post("/processPayment", async (req, res) => {
 
         // Step 3: full DB scan only if still not verified
         if (!verified) {
-            const allDocs = await db.collection("svethappy_ugc").get();
+            const allDocs = await db.collection(CUSTOMERS_COLLECTION).get();
             for (const doc of allDocs.docs) {
                 if (doc.id === String(telegramId)) continue; // already checked above
                 const data = doc.data();

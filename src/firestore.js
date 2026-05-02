@@ -7,6 +7,6 @@ if (!FIREBASE_SERVICE_ACCOUNT) throw new Error("FIREBASE_SERVICE_ACCOUNT is not 
 if (!getApps().length) {
     initializeApp({credential: cert(JSON.parse(FIREBASE_SERVICE_ACCOUNT))});
 }
-
+export const CUSTOMERS_COLLECTION = "customers";
 export const db = getFirestore();
 

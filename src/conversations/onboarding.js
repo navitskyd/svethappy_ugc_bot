@@ -1,7 +1,8 @@
 import {InlineKeyboard} from "grammy";
 import {FieldValue} from "firebase-admin/firestore";
-import {db} from "../firestore.js";
+import {CUSTOMERS_COLLECTION, db} from "../firestore.js";
 import {EMAIL_RE, formatUserSummary} from "../helpers.js";
+import {ugcFlow} from "./ugcFlow.js";
 
 const {LANDING_PAGE, PRIVACY_POLICY_URL = "", OFFER_URL = ""} = process.env;
 
@@ -9,7 +10,15 @@ function isStart(ctx) {
     return ctx.message?.text?.trim().startsWith("/start");
 }
 
-export async function onboarding(conversation, ctx) {
+/**
+ * @param {import("@grammyjs/conversations").Conversation} conversation
+ * @param {import("grammy").Context} ctx
+ * @param {{ context?: string, instagramNick?: string }} [startPayload]
+ */
+export async function onboarding(conversation, ctx, startPayload) {
+    console.log("startPayload:", startPayload);
+    const flowContext = (startPayload?.context ?? "").toUpperCase();
+    const instagramNick = startPayload?.instagramNick ?? null;
     const policyLink = PRIVACY_POLICY_URL
         ? `<a href="${PRIVACY_POLICY_URL}">Политикой конфиденциальности</a>`
         : "Политикой конфиденциальности";
@@ -24,7 +33,7 @@ export async function onboarding(conversation, ctx) {
 
     await ctx.reply(
         `👋 Привет!\n\n` +
-        `Чтобы получить доступ к <b>бесплатному уроку по UGC</b>, мне понадобится ваш email.\n\n` +
+        `Чтобы получить доступ к <b>материалам SvetHappy</b>, мне понадобится ваш email.\n\n` +
         `Вводя свои данные, вы даёте согласие на обработку данных вашего профиля Telegram и email в соответствии с ${policyLink} и принимаете условия ${offerLink}.\n\n` +
         `🔒 Ваши данные в безопасности и обрабатываются согласно стандартам GDPR.`,
         {parse_mode: "HTML", link_preview_options: {is_disabled: true}, reply_markup: consentKeyboard}
@@ -88,7 +97,7 @@ export async function onboarding(conversation, ctx) {
     }
 
     // Step 4 – save to Firestore (move old email to backupEmails, keep last 5, no duplicates)
-    const docRef = db.collection("svethappy_ugc").doc(String(ctx.from.id));
+    const docRef = db.collection(CUSTOMERS_COLLECTION).doc(String(ctx.from.id));
     const snapshot = await docRef.get();
     const existingData = snapshot.exists ? snapshot.data() : {};
 
@@ -108,16 +117,22 @@ export async function onboarding(conversation, ctx) {
         email,
         consentGiven: true,
         backupEmails,
+        ...(instagramNick && {instagramNick}),
         updatedAt: FieldValue.serverTimestamp(),
         ...(!snapshot.exists && {createdAt: FieldValue.serverTimestamp()}),
     }, {merge: true});
 
-    // Step 5 – show summary and navigation link
+    // Step 5 – show summary
     await ctx.reply(formatUserSummary(ctx.from, email), {parse_mode: "HTML"});
 
-    await ctx.reply(
-        "🎉 Добро пожаловать в наше сообщество!\n\n" +
-        "Переходи на наш сайт и приятного просмотра 👇\n\n" +
-        `🌐 ${LANDING_PAGE}?email=` + encodeURIComponent(email) + "&telegram_id=" + ctx.from.id,
-    );
+    // Step 6 – context-specific flow
+    if (flowContext === "UGC") {
+        await ugcFlow(ctx, email, instagramNick);
+    } else {
+        await ctx.reply(
+            "🎉 Добро пожаловать в наше сообщество!\n\n" +
+            "Переходи на наш сайт и приятного просмотра 👇\n\n" +
+            `🌐 ${LANDING_PAGE}?email=` + encodeURIComponent(email) + "&telegram_id=" + ctx.from.id,
+        );
+    }
 }

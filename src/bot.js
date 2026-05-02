@@ -1,7 +1,7 @@
 import {Bot} from "grammy";
 import {conversations, createConversation} from "@grammyjs/conversations";
 import {onboarding} from "./conversations/onboarding.js";
-import {db} from "./firestore.js";
+import {CUSTOMERS_COLLECTION, db} from "./firestore.js";
 
 const {BOT_TOKEN, PRIVACY_POLICY_URL, OFFER_URL, SUPPORT_EMAIL} = process.env;
 if (!BOT_TOKEN) throw new Error("BOT_TOKEN is not set in .env");
@@ -15,11 +15,21 @@ bot.use(createConversation(onboarding));
 bot.command("start", async (ctx) => {
     await ctx.conversation.exit(); // reset any active scenario
     const name = ctx.from?.first_name ?? "друг";
+
+    // Parse deep-link payload: /start <context>_<instagramNick>
+    // e.g. /start UGC_johndoe  or  /start Travel
+    const raw = ctx.match?.trim() ?? "";
+    const parts = raw.split("_");
+    const startPayload = {
+        context: parts[0] ?? "",
+        instagramNick: parts[1] ?? null,
+    };
+
     await ctx.reply(
-        `👋 Привет, <b>${name}</b>! Добро пожаловать в SvetHappy UGC Bot.`,
+        `👋 Привет, <b>${name}</b>! Вас приветствует помощник SvetHappy.`,
         {parse_mode: "HTML"}
     );
-    await ctx.conversation.enter("onboarding");
+    await ctx.conversation.enter("onboarding", startPayload);
 });
 
 // ── /profile ──────────────────────────────────────────────────────────────
@@ -28,7 +38,7 @@ bot.command("profile", async (ctx) => {
     const offer = OFFER_URL || "https://svet-happy.web.app/offer.html";
     const support = SUPPORT_EMAIL || "svethappy.support@gmail.com";
 
-    const snap = await db.collection("svethappy_ugc").doc(String(ctx.from.id)).get();
+    const snap = await db.collection(CUSTOMERS_COLLECTION).doc(String(ctx.from.id)).get();
     const email = snap.exists && snap.data().email ? snap.data().email : "не указан";
 
     await ctx.reply(
