@@ -10,8 +10,21 @@
     }
 
     function initConsentCheckboxes(consentText) {
+        const params = new URLSearchParams(window.location.search);
+        const email = params.get('email') || '';
+        const telegram_id = params.get('telegram_id') || '';
+
         var buyBtns = document.querySelectorAll('a.t-btn[href*="buy.stripe.com"]');
         buyBtns.forEach(function (btn, i) {
+            // append locked_email and customer_reference to the Stripe URL
+            try {
+                var url = new URL(btn.href);
+                if (email) url.searchParams.set('locked_prefilled_email', email);
+                if (telegram_id) url.searchParams.set('client_reference_id', telegram_id);
+                btn.href = url.toString();
+            } catch (e) {
+            }
+
             var cbId = 'stripe-consent-' + i;
 
             var wrap = document.createElement('label');

@@ -159,6 +159,7 @@
     function applyConfig(cfg) {
         const params = new URLSearchParams(window.location.search);
         const email = params.get('email') || '';
+        const telegram_id = params.get('telegram_id') || '';
 
         // video
         const videoId = cfg.FREE_UGC_VIDEO_ID;
@@ -172,6 +173,7 @@
         const ugcBtn = document.getElementById('btn-ugc');
         const ugcExtra = new URLSearchParams(ugcBase.includes('?') ? ugcBase.split('?')[1] : '');
         if (email) ugcExtra.set('email', email);
+        if (telegram_id) ugcExtra.set('telegram_id', telegram_id);
         ugcBtn.href = ugcBase.split('?')[0] + (ugcExtra.toString() ? '?' + ugcExtra.toString() : '');
 
         // community button

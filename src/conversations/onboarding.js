@@ -118,6 +118,6 @@ export async function onboarding(conversation, ctx) {
     await ctx.reply(
         "🎉 Добро пожаловать в наше сообщество!\n\n" +
         "Переходи на наш сайт и приятного просмотра 👇\n\n" +
-        `🌐 ${LANDING_PAGE}?email=` + encodeURIComponent(email) + "&telegramId=" + ctx.from.id,
+        `🌐 ${LANDING_PAGE}?email=` + encodeURIComponent(email) + "&telegram_id=" + ctx.from.id,
     );
 }
