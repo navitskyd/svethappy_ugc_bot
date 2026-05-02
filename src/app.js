@@ -43,7 +43,11 @@ app.post("/processPayment", async (req, res) => {
         let verified = false;
         if (!snapshot.empty) {
             const data = snapshot.docs[0].data();
-            if (data.email && data.email.toLowerCase() === email.toLowerCase()) {
+            const emailLower = email.toLowerCase();
+            const primaryMatch = data.email && data.email.toLowerCase() === emailLower;
+            const backupMatch = Array.isArray(data.backupEmails) &&
+                data.backupEmails.some(e => e.toLowerCase() === emailLower);
+            if (primaryMatch || backupMatch) {
                 verified = true;
             }
         }
@@ -53,15 +57,31 @@ app.post("/processPayment", async (req, res) => {
             const telegramLinkedEmail = !snapshot.empty
                 ? (snapshot.docs[0].data().email || "—")
                 : "не найден в базе";
+            const telegramLinkedBackupEmails = !snapshot.empty && Array.isArray(snapshot.docs[0].data().backupEmails)
+                ? snapshot.docs[0].data().backupEmails.join(", ") || "—"
+                : "—";
 
-            // Find what email is linked to
+            // Find what email is linked to (primary or backup)
             const emailSnapshot = await db.collection("svethappy_ugc")
                 .where("email", "==", email.toLowerCase())
                 .limit(1)
                 .get();
-            const emailLinkedTelegramId = !emailSnapshot.empty
-                ? (emailSnapshot.docs[0].data().telegramId || "—")
-                : "не найден в базе";
+            const backupEmailSnapshot = emailSnapshot.empty
+                ? await db.collection("svethappy_ugc")
+                    .where("backupEmails", "array-contains", email.toLowerCase())
+                    .limit(1)
+                    .get()
+                : null;
+
+            let emailLinkedTelegramId = "не найден в базе";
+            let emailFoundIn = "";
+            if (!emailSnapshot.empty) {
+                emailLinkedTelegramId = emailSnapshot.docs[0].data().telegramId || "—";
+                emailFoundIn = " (основной email)";
+            } else if (backupEmailSnapshot && !backupEmailSnapshot.empty) {
+                emailLinkedTelegramId = backupEmailSnapshot.docs[0].data().telegramId || "—";
+                emailFoundIn = " (в backupEmails)";
+            }
 
             const alertText =
                 `⚠️ processPayment: несовпадение данных!\n\n` +
@@ -70,7 +90,8 @@ app.post("/processPayment", async (req, res) => {
                 `  Telegram ID: ${telegramId}\n\n` +
                 `В Firestore:\n` +
                 `  Telegram ID ${telegramId} привязан к email: ${telegramLinkedEmail}\n` +
-                `  Email ${email} привязан к Telegram ID: ${emailLinkedTelegramId}\n\n` +
+                `  Telegram ID ${telegramId} backupEmails: ${telegramLinkedBackupEmails}\n` +
+                `  Email ${email} привязан к Telegram ID: ${emailLinkedTelegramId}${emailFoundIn}\n\n` +
                 `Требуется проверка.`;
             await bot.api.sendMessage(ADMIN_ID, alertText);
         }
