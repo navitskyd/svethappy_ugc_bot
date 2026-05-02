@@ -2,7 +2,13 @@ import Stripe from "stripe";
 import {FieldValue} from "firebase-admin/firestore";
 import {CUSTOMERS_COLLECTION, db} from "../firestore.js";
 
-const {STRIPE_SECRET_KEY, LANDING_PAGE} = process.env;
+import { Redis } from '@upstash/redis'
+
+const {STRIPE_SECRET_KEY, LANDING_PAGE,REDIS_KV_REST_API_URL,REDIS_KV_REST_API_TOKEN} = process.env;
+const redis = new Redis({
+    url: REDIS_KV_REST_API_URL,
+    token: REDIS_KV_REST_API_TOKEN,
+});
 
 /**
  * Handles post-payment registration.
@@ -18,6 +24,11 @@ export async function paymentFlow(ctx, sessionId) {
         return;
     }
 
+    if (!sessionId) {
+        await ctx.reply("⚠️ Не удалось определить сессию оплаты. Обратитесь в поддержку.");
+        return;
+    }
+    sessionId = await redis.get(sessionId);
     if (!sessionId) {
         await ctx.reply("⚠️ Не удалось определить сессию оплаты. Обратитесь в поддержку.");
         return;
