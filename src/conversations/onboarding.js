@@ -51,11 +51,6 @@ export async function onboarding(conversation, ctx, startPayload) {
         return;
     }
 
-    await consentCtx.editMessageText(
-        `✅ Спасибо за согласие!\n\nПожалуйста, введите ваш email ниже:`,
-        {parse_mode: "HTML"}
-    );
-
     // Step 2 – email loop until confirmed
     // const docRef1 = db.collection(CUSTOMERS_COLLECTION).doc(String(ctx.from.id));
     // const snapshot1 = await conversation.external(() => docRef1.get());
@@ -63,11 +58,24 @@ export async function onboarding(conversation, ctx, startPayload) {
     // let email = existingData1.email ?? null; // pre-fill from DB if available
 
     const snap = await db.collection(CUSTOMERS_COLLECTION).doc(String(ctx.from.id)).get();
-    let email = snap.exists && snap.data().email ? snap.data().email : null;
+    let candidate  = snap.exists && snap.data().email ? snap.data().email : null;
+    let email = null;
+
+    if(candidate){
+        await consentCtx.editMessageText(
+            `✅ Спасибо за согласие!\n\nПожалуйста, подтвердите ваш email:`,
+            {parse_mode: "HTML"}
+        );
+    } else {
+        await consentCtx.editMessageText(
+            `✅ Спасибо за согласие!\n\nПожалуйста, введите ваш email ниже:`,
+            {parse_mode: "HTML"}
+        );
+    }
 
     while (!email) {
         // Wait for a valid email format
-        let candidate = null;
+
         while (!candidate) {
             const emailCtx = await conversation.waitFor("message:text");
 
