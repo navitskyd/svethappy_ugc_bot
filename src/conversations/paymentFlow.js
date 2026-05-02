@@ -28,7 +28,11 @@ export async function paymentFlow(ctx, sessionId) {
         await ctx.reply("⚠️ Не удалось определить сессию оплаты. Обратитесь в поддержку.");
         return;
     }
-    sessionId = await redis.get(sessionId);
+
+    let shortKey = sessionId;
+    sessionId = await redis.get(shortKey);
+    redis.del(shortKey);
+
     if (!sessionId) {
         await ctx.reply("⚠️ Не удалось определить сессию оплаты. Обратитесь в поддержку.");
         return;
