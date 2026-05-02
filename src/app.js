@@ -2,6 +2,7 @@ import express from "express";
 import {webhookCallback} from "grammy";
 import {bot} from "./bot.js";
 import {CUSTOMERS_COLLECTION, db} from "./firestore.js";
+import {buildKey} from "./utils.js";
 
 const {WEBHOOK_PATH = "/webhook"} = process.env;
 
@@ -25,10 +26,14 @@ app.get("/info", (_req, res) => {
 });
 
 app.post("/processPayment", async (req, res) => {
-    const {email, telegramId, message} = req.body;
+    let {email, telegramId, message} = req.body;
 
-    if (!email || !telegramId) {
-        return res.status(400).json({error: "email and telegramId are required"});
+    if (!email && !telegramId) {
+        return res.status(400).json({error: "email or telegramId are required"});
+    }
+
+    if(!telegramId){
+        telegramId = buildKey(email);
     }
 
     const ADMIN_ID = 553384344;
