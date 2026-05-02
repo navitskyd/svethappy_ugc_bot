@@ -13,6 +13,7 @@ bot.use(createConversation(onboarding));
 
 // ── /start ────────────────────────────────────────────────────────────────
 bot.command("start", async (ctx) => {
+    await ctx.conversation.exit(); // reset any active scenario
     const name = ctx.from?.first_name ?? "друг";
     await ctx.reply(
         `👋 Привет, <b>${name}</b>! Добро пожаловать в SvetHappy UGC Bot.`,

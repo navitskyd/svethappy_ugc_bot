@@ -5,6 +5,10 @@ import {EMAIL_RE, formatUserSummary} from "../helpers.js";
 
 const {LANDING_PAGE, PRIVACY_POLICY_URL = "", OFFER_URL = ""} = process.env;
 
+function isStart(ctx) {
+    return ctx.message?.text?.trim().startsWith("/start");
+}
+
 export async function onboarding(conversation, ctx) {
     const policyLink = PRIVACY_POLICY_URL
         ? `<a href="${PRIVACY_POLICY_URL}">Политикой конфиденциальности</a>`
@@ -50,6 +54,9 @@ export async function onboarding(conversation, ctx) {
         let candidate = null;
         while (!candidate) {
             const emailCtx = await conversation.waitFor("message:text");
+
+            if (isStart(emailCtx)) return; // /start resets the flow
+
             const input = emailCtx.message.text.trim();
             if (EMAIL_RE.test(input)) {
                 candidate = input;
