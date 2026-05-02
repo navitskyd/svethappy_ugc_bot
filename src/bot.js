@@ -1,6 +1,6 @@
 import {Bot} from "grammy";
 import {conversations, createConversation} from "@grammyjs/conversations";
-import {onboarding, setStartPayload} from "./conversations/onboarding.js";
+import {onboarding} from "./conversations/onboarding.js";
 import {CUSTOMERS_COLLECTION, db} from "./firestore.js";
 
 const {BOT_TOKEN, PRIVACY_POLICY_URL, OFFER_URL, SUPPORT_EMAIL} = process.env;
@@ -29,8 +29,7 @@ bot.command("start", async (ctx) => {
         `👋 Привет, <b>${name}</b>! Вас приветствует помощник SvetHappy.`,
         {parse_mode: "HTML"}
     );
-    setStartPayload(ctx.from.id, startPayload);
-    await ctx.conversation.enter("onboarding");
+    await ctx.conversation.enter("onboarding", startPayload);
 });
 
 // ── /profile ──────────────────────────────────────────────────────────────
