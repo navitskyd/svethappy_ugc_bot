@@ -23,4 +23,21 @@ app.get("/info", (_req, res) => {
     res.json(info);
 });
 
+app.post("/processPayment", async (req, res) => {
+    const {email, telegramId, message} = req.body;
+
+    if (!email || !telegramId) {
+        return res.status(400).json({error: "email and telegramId are required"});
+    }
+
+    try {
+        const text = message || `✅ Оплата получена!\n\nEmail: ${email}\nTelegram ID: ${telegramId}`;
+        await bot.api.sendMessage(telegramId, text);
+        res.json({success: true});
+    } catch (err) {
+        console.error("processPayment error:", err);
+        res.status(500).json({error: err.message});
+    }
+});
+
 export default app;
