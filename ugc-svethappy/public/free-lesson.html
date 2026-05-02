@@ -128,34 +128,64 @@
 
 <div class="video-wrapper">
     <iframe
-            src="https://www.youtube.com/embed/${FREE_UGC_VIDEO_ID}?rel=0&modestbranding=1"
+            id="ugc-video"
+            src=""
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen>
     </iframe>
 </div>
 
 <div class="buttons">
-    <a class="btn btn-primary" id="btn-ugc" href="${UGC_SITE_URL}">🎬 UGC Каталог</a>
-    <a class="btn btn-secondary" href="${PRIVATE_COMMUNITY_URL}">🔒 Закрытая группа</a>
+    <a class="btn btn-primary" id="btn-ugc" href="#">🎬 UGC Каталог</a>
+    <a class="btn btn-secondary" id="btn-community" href="#">🔒 Закрытая группа</a>
 </div>
 
 <footer>
-    <a href="${PRIVACY_POLICY_URL}" target="_blank" rel="noopener noreferrer">Политика конфиденциальности / Privacy
+    <a id="footer-privacy" href="#" target="_blank" rel="noopener noreferrer">Политика конфиденциальности / Privacy
         Policy</a>
     <span class="separator">|</span>
-    <a href="${OFFER_URL}" target="_blank" rel="noopener noreferrer">Публичная оферта / Terms and Conditions</a>
+    <a id="footer-offer" href="#" target="_blank" rel="noopener noreferrer">Публичная оферта / Terms and Conditions</a>
 </footer>
 
 <script>
-    const params = new URLSearchParams(window.location.search);
-    const email = params.get("email") || "";
-    const btn = document.getElementById("btn-ugc");
+    const FALLBACKS = {
+        FREE_UGC_VIDEO_ID: '',
+        UGC_SITE_URL: 'https://ugc-svethappy.web.app/',
+        PRIVATE_COMMUNITY_URL: '#',
+        PRIVACY_POLICY_URL: 'https://svet-happy.web.app/privacy.html',
+        OFFER_URL: 'https://svet-happy.web.app/offer.html',
+    };
 
-    const base = btn.href.split("?")[0];
-    const existing = btn.href.includes("?") ? btn.href.split("?")[1] : "";
-    const extra = new URLSearchParams(existing);
-    if (email) extra.set("email", email);
-    btn.href = base + "?" + extra.toString();
+    function applyConfig(cfg) {
+        const params = new URLSearchParams(window.location.search);
+        const email = params.get('email') || '';
+
+        // video
+        const videoId = cfg.FREE_UGC_VIDEO_ID;
+        if (videoId) {
+            document.getElementById('ugc-video').src =
+                'https://www.youtube.com/embed/' + videoId + '?rel=0&modestbranding=1';
+        }
+
+        // UGC catalogue button — append email param
+        const ugcBase = cfg.UGC_SITE_URL || FALLBACKS.UGC_SITE_URL;
+        const ugcBtn = document.getElementById('btn-ugc');
+        const ugcExtra = new URLSearchParams(ugcBase.includes('?') ? ugcBase.split('?')[1] : '');
+        if (email) ugcExtra.set('email', email);
+        ugcBtn.href = ugcBase.split('?')[0] + (ugcExtra.toString() ? '?' + ugcExtra.toString() : '');
+
+        // community button
+        document.getElementById('btn-community').href =
+            cfg.PRIVATE_COMMUNITY_URL || FALLBACKS.PRIVATE_COMMUNITY_URL;
+
+        // footer links
+        document.getElementById('footer-privacy').href =
+            cfg.PRIVACY_POLICY_URL || FALLBACKS.PRIVACY_POLICY_URL;
+        document.getElementById('footer-offer').href =
+            cfg.OFFER_URL || FALLBACKS.OFFER_URL;
+    }
+
+    applyConfig(FALLBACKS);
 </script>
 </body>
 </html>

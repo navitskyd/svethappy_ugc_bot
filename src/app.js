@@ -12,10 +12,7 @@ app.get("/health", (_req, res) => res.json({status: "ok"}));
 
 const NON_SENSITIVE_KEYS = [
     "PRIVACY_POLICY_URL",
-    "OFFER_URL",
-    "FREE_UGC_VIDEO_ID",
-    "UGC_SITE_URL",
-    "PRIVATE_COMMUNITY_URL",
+    "OFFER_URL"
 ];
 
 app.get("/info", (_req, res) => {
