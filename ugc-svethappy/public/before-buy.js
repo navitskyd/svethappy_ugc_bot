@@ -16,10 +16,10 @@
 
         var buyBtns = document.querySelectorAll('a.t-btn[href*="buy.stripe.com"]');
         buyBtns.forEach(function (btn, i) {
-            // append locked_email and customer_reference to the Stripe URL
+            // append email and customer_reference to the Stripe URL
             try {
                 var url = new URL(btn.href);
-                if (email) url.searchParams.set('locked_prefilled_email', email);
+                if (email) url.searchParams.set('prefilled_email', email);
                 if (telegram_id) url.searchParams.set('client_reference_id', telegram_id);
                 btn.href = url.toString();
             } catch (e) {
