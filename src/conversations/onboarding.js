@@ -61,7 +61,9 @@ export async function onboarding(conversation, ctx, startPayload) {
     // const snapshot1 = await conversation.external(() => docRef1.get());
     // const existingData1 = snapshot1.exists ? snapshot1.data() : {};
     // let email = existingData1.email ?? null; // pre-fill from DB if available
-    let email = null;
+
+    const snap = await db.collection(CUSTOMERS_COLLECTION).doc(String(ctx.from.id)).get();
+    let email = snap.exists && snap.data().email ? snap.data().email : null;
 
     while (!email) {
         // Wait for a valid email format
