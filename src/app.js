@@ -2,6 +2,8 @@ import express from "express";
 import {webhookCallback} from "grammy";
 import {bot} from "./bot.js";
 import {CUSTOMERS_COLLECTION, db} from "./firestore.js";
+import {buildKey} from "./utils.js";
+import {FieldValue} from "firebase-admin/firestore";
 
 const {WEBHOOK_PATH = "/webhook"} = process.env;
 
@@ -27,8 +29,13 @@ app.get("/info", (_req, res) => {
 app.post("/processPayment", async (req, res) => {
     const {email, telegramId, message} = req.body;
 
-    if (!email || !telegramId) {
-        return res.status(400).json({error: "email and telegramId are required"});
+    if (!email && !telegramId) {
+        return res.status(400).json({error: "email or telegramId are required"});
+    }
+
+    let userKey = telegramId;
+    if(!userKey){
+        userKey = buildKey(email);
     }
 
     const ADMIN_ID = 553384344;
@@ -36,8 +43,8 @@ app.post("/processPayment", async (req, res) => {
     try {
         const emailLower = email.toLowerCase();
 
-        // Doc ID is telegramId
-        const docRef = db.collection(CUSTOMERS_COLLECTION).doc(String(telegramId));
+        // Doc ID is userKey
+        const docRef = db.collection(CUSTOMERS_COLLECTION).doc(String(userKey));
         const docSnap = await docRef.get();
 
         let verified = false;
@@ -63,7 +70,7 @@ app.post("/processPayment", async (req, res) => {
         if (!verified) {
             const allDocs = await db.collection(CUSTOMERS_COLLECTION).get();
             for (const doc of allDocs.docs) {
-                if (doc.id === String(telegramId)) continue; // already checked above
+                if (doc.id === String(userKey)) continue; // already checked above
                 const data = doc.data();
                 const docEmails = [
                     ...(data.email ? [data.email.toLowerCase()] : []),
@@ -90,18 +97,25 @@ app.post("/processPayment", async (req, res) => {
                 `⚠️ processPayment: несовпадение данных!\n\n` +
                 `Входящие данные:\n` +
                 `  Email: ${email}\n` +
-                `  Telegram ID: ${telegramId}\n\n` +
+                `  Telegram ID: ${userKey}\n\n` +
                 `В Firestore:\n` +
-                `  Telegram ID ${telegramId} привязан к email: ${telegramLinkedEmail}\n` +
-                `  Telegram ID ${telegramId} backupEmails: ${telegramLinkedBackupEmails}\n` +
+                `  Telegram ID ${userKey} привязан к email: ${telegramLinkedEmail}\n` +
+                `  Telegram ID ${userKey} backupEmails: ${telegramLinkedBackupEmails}\n` +
                 `  Email ${email} привязан к Telegram ID: ${emailLinkedTelegramId}${emailFoundIn}\n\n` +
                 `Требуется проверка.`;
             await bot.api.sendMessage(ADMIN_ID, alertText);
 
         }
 
-        const text = message || `✅ Оплата получена!\n\nEmail: ${email}\nTelegram ID: ${telegramId}`;
+        await docRef.set({
+            telegramId: userKey,
+            email,
+            updatedAt: FieldValue.serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp()
+        }, {merge: true});
+
         if(telegramId) {
+            const text = message || `✅ Оплата получена!\n\nEmail: ${email}\nTelegram ID: ${telegramId}`;
             await bot.api.sendMessage(telegramId, text);
         }
         res.json({success: true});
