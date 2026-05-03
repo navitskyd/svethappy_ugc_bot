@@ -111,7 +111,7 @@ app.post("/processPayment", async (req, res) => {
             telegramId: userKey,
             email,
             updatedAt: FieldValue.serverTimestamp(),
-            ...(!snapshot.exists && {createdAt: FieldValue.serverTimestamp()}),
+            createdAt: FieldValue.serverTimestamp()
         }, {merge: true});
 
         if(telegramId) {
