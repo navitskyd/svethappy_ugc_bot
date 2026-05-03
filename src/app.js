@@ -3,6 +3,7 @@ import {webhookCallback} from "grammy";
 import {bot} from "./bot.js";
 import {CUSTOMERS_COLLECTION, db} from "./firestore.js";
 import {buildKey} from "./utils.js";
+import {FieldValue} from "firebase-admin/firestore";
 
 const {WEBHOOK_PATH = "/webhook"} = process.env;
 
@@ -105,6 +106,13 @@ app.post("/processPayment", async (req, res) => {
             await bot.api.sendMessage(ADMIN_ID, alertText);
 
         }
+
+        await docRef.set({
+            telegramId: userKey,
+            email,
+            updatedAt: FieldValue.serverTimestamp(),
+            ...(!snapshot.exists && {createdAt: FieldValue.serverTimestamp()}),
+        }, {merge: true});
 
         if(telegramId) {
             const text = message || `✅ Оплата получена!\n\nEmail: ${email}\nTelegram ID: ${telegramId}`;
